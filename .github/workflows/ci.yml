@@ -2,7 +2,9 @@ name: CI
 
 on:
   push:
+    branches: [main, develop]
   pull_request:
+  workflow_dispatch:
 
 # A second push to the same branch makes the first run's answer worthless.
 concurrency:
@@ -53,8 +55,10 @@ jobs:
       # Report both versions. One failing must not hide the other's result.
       fail-fast: false
       matrix:
-        # composer.json requires ^8.2; local development is on 8.4.
-        php: ['8.2', '8.4']
+        # The locked Symfony packages require PHP >= 8.4.1 (composer.json's ^8.2
+        # is wider than composer.lock allows), so 8.4 is the only version that
+        # can install. Production runs lsphp 8.4.
+        php: ['8.4']
 
     services:
       mysql:
@@ -260,14 +264,52 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Browser tests against the Vite dev server with a mocked API.
+      - name: Install browser for integration tests
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser tests
+        run: npm run test:e2e
+
+      - name: Upload browser test failures
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-test-failures
+          path: frontend/test-results/
+          retention-days: 7
+
+  # ---------------------------------------------------------------------------
+  # The single gate. Production deploys (scripts/deploy-pull.sh) and branch
+  # protection on `main` wait for this one check rather than a list of job
+  # names that would silently stop matching when a job is renamed. The advisory
+  # dependency audit is deliberately not a dependency.
+  # ---------------------------------------------------------------------------
+  ci-passed:
+    name: CI passed
+    if: always()
+    needs: [backend, static-analysis, frontend]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Require every gating job to succeed
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Job results: $RESULTS"
+          for r in $RESULTS; do
+            if [ "$r" != "success" ]; then
+              echo "::error::A required job did not succeed ($r)."
+              exit 1
+            fi
+          done
+
   # ---------------------------------------------------------------------------
   # Dependency advisories, reported but not blocking.
   #
-  # `composer audit` currently reports 7 advisories across 2 packages, and
-  # Laravel is pinned at 11.55.0 with a known CRLF advisory whose fix is 12.60+.
-  # Failing the build on that would make CI permanently red for a reason no pull
-  # request can fix, so this job surfaces the report and is allowed to fail.
-  # Flip `continue-on-error` to false once the framework upgrade lands.
+  # New advisories appear without any change to this repository, so a fresh
+  # report must not block an unrelated pull request or a deploy. The job
+  # surfaces the report and is allowed to fail; triage it from the run summary.
   # ---------------------------------------------------------------------------
   dependency-audit:
     name: Dependency audit (advisory)

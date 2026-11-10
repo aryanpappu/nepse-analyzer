@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # Deploy to a CyberPanel (OpenLiteSpeed + lsphp) host over SSH, without Docker.
 #
-# Builds the React app locally, syncs the source, then on the server: installs
-# production Composer dependencies, migrates, caches config, publishes the SPA
-# into backend/public, and restarts the Horizon service.
+# Manual deploy: builds the React app locally, syncs the working tree, then runs
+# scripts/server-install.sh on the server. For automatic deploys from the main
+# branch, see scripts/deploy-pull.sh. Do not mix the two on one server: this
+# script overwrites the checkout that the pull deploy manages with git.
 #
 # Nothing host-specific lives in this file. Configure it through the environment:
 #
@@ -54,44 +55,6 @@ rsync -az --delete \
   "$ROOT/" "$DEPLOY_HOST:$DEPLOY_PATH/"
 
 echo "==> Server-side install"
-# shellcheck disable=SC2087 # variables are intentionally expanded locally
-ssh "$DEPLOY_HOST" bash -s <<EOF
-set -euo pipefail
-cd "$DEPLOY_PATH/backend"
-run() { sudo -u "$DEPLOY_USER" env HOME="\$(dirname "$DEPLOY_PATH")" ${PHP_INI_EXTRA:+PHP_INI_SCAN_DIR=:$PHP_INI_EXTRA} "\$@"; }
-
-run "$PHP_BIN" /usr/bin/composer install --no-dev --optimize-autoloader --no-interaction --no-progress
-run "$PHP_BIN" artisan down --retry=30 || true
-run "$PHP_BIN" artisan migrate --force --no-interaction
-
-# Publish the SPA next to Laravel's front controller.
-run rsync -a --delete-after --exclude index.html "$DEPLOY_PATH/frontend/dist/assets/" public/assets/
-run rsync -a --exclude index.html --exclude assets "$DEPLOY_PATH/frontend/dist/" public/
-run cp "$DEPLOY_PATH/frontend/dist/index.html" public/spa.html
-
-# Route client-side paths to the SPA (idempotent; the repo copy of .htaccess stays stock Laravel).
-if ! grep -q 'spa.html' public/.htaccess; then
-  run python3 -I - <<'PY'
-p = "public/.htaccess"
-s = open(p).read()
-marker = "    # Send Requests To Front Controller..."
-spa = (
-    "    # React SPA: everything that is not the API, Horizon, a health check or a real file\n"
-    "    # is a client-side route and gets the built index page.\n"
-    "    RewriteRule ^\$ spa.html [L]\n"
-    "    RewriteCond %{REQUEST_URI} !^/(api|sanctum|horizon|up|storage|vendor)(/|\$)\n"
-    "    RewriteCond %{REQUEST_FILENAME} !-f\n"
-    "    RewriteRule ^ spa.html [L]\n\n"
-)
-open(p, "w").write(s.replace(marker, spa + marker))
-PY
-fi
-
-run "$PHP_BIN" artisan optimize
-run "$PHP_BIN" artisan up
-systemctl restart "$HORIZON_SERVICE"
-sleep 3
-systemctl is-active "$HORIZON_SERVICE"
-EOF
+ssh "$DEPLOY_HOST" "APP_DIR='$DEPLOY_PATH' SITE_USER='$DEPLOY_USER' PHP_BIN='$PHP_BIN' PHP_INI_EXTRA='$PHP_INI_EXTRA' HORIZON_SERVICE='$HORIZON_SERVICE' BUILD_FRONTEND=0 bash '$DEPLOY_PATH/scripts/server-install.sh'"
 
 echo "==> Done"

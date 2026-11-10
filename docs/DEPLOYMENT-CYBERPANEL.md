@@ -78,3 +78,72 @@ RewriteRule ^/?api/register$ - [F,L]
 `/`, a client route such as `/portfolio`, `/api/market/summary` and `/up` should
 return 200; `/.env` must return 403. Then check
 `php artisan horizon:status` and `php artisan schedule:list`.
+
+## Continuous deployment (recommended)
+
+Branches:
+
+| Branch | Purpose | What happens on push |
+|---|---|---|
+| `develop` (default) | everyday work; open pull requests here | CI runs |
+| `main` | production; changes arrive by pull request from `develop` | CI runs, then the server deploys it |
+
+Deployment is **pull-based**. A systemd timer on the server runs
+`scripts/deploy-pull.sh` every few minutes. When `main` has moved, it waits until
+the GitHub Actions check **"CI passed"** succeeded for that exact commit, backs up
+the database, checks the commit out, runs `scripts/server-install.sh` (Composer,
+frontend build, migrations, SPA publish, Horizon restart) and requests
+`HEALTH_URL`. If the install or the health check fails it restores and reinstalls
+the previous commit and records the bad commit so it is not retried. Migrations
+are not reversed automatically; a database dump from just before the deploy is
+kept in `BACKUP_DIR`.
+
+Because the server only reads a public repository, no SSH keys or deploy secrets
+are stored in GitHub.
+
+One-time setup on the server (as root):
+
+```bash
+# 1. Make the app directory a git checkout of main (keeps .env, vendor, storage).
+sudo -u siteuser git -C /home/your.domain/app init -q
+sudo -u siteuser git -C /home/your.domain/app remote add origin https://github.com/OWNER/REPO.git
+sudo -u siteuser git -C /home/your.domain/app fetch -q origin main
+sudo -u siteuser git -C /home/your.domain/app checkout -q -f -B deploy origin/main
+
+# 2. Settings for the deploy job.
+cat > /etc/default/stock-deploy <<'CONF'
+APP_DIR=/home/your.domain/app
+SITE_USER=siteuser
+GITHUB_REPO=OWNER/REPO
+HEALTH_URL=https://your.domain/up
+PHP_INI_EXTRA=/home/your.domain/.php-cli
+CONF
+
+# 3. Service + timer.
+cat > /etc/systemd/system/stock-deploy.service <<'UNIT'
+[Unit]
+Description=Deploy main when CI has passed
+After=network-online.target
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/default/stock-deploy
+ExecStart=/bin/bash /home/your.domain/app/scripts/deploy-pull.sh
+UNIT
+cat > /etc/systemd/system/stock-deploy.timer <<'UNIT'
+[Unit]
+Description=Check for production deploys
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=3min
+[Install]
+WantedBy=timers.target
+UNIT
+systemctl daemon-reload && systemctl enable --now stock-deploy.timer
+```
+
+Watch deploys with `journalctl -u stock-deploy -f`. To retry a commit that was
+rolled back, fix forward with a new commit (or delete
+`/var/lib/stock-deploy/failed_sha`).
+
+Protect `main` on GitHub (Settings → Branches): require a pull request and the
+status check **CI passed**.
