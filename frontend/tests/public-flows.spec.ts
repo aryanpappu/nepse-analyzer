@@ -17,10 +17,16 @@ function account(name = 'Alice') {
   }
 }
 
-async function mockApi(page: Page) {
+const openSite = {
+  name: 'NEPSE Analyzer', operator_name: null, contact_email: null, privacy_url: null,
+  terms_url: null, require_login: false, registration_open: true,
+}
+
+async function mockApi(page: Page, site = openSite) {
   await page.route('**/api/**', async (route) => {
     const path = new URL(route.request().url()).pathname.replace('/api', '')
     const data = path === '/profiles' ? profiles
+      : path === '/site-information' ? site
       : path === '/health' ? { latest_price_date: null, status: { level: 'ok' } }
       : path === '/onboarding' ? { steps: [], next: null, complete: true }
       : path === '/portfolios' || path === '/sectors' ? []
@@ -115,6 +121,8 @@ test('signing out clears the previous account before another account signs in', 
   await page.getByRole('button', { name: 'Sign out', exact: true }).click()
   await expect(page).toHaveURL(/\/login$/)
   await signIn(page, 'Bob')
+  // Wait for the sign-in to finish before reloading, or the reload races it.
+  await expect(page).not.toHaveURL(/\/login$/)
   await page.route('**/api/auth/me', (route) => route.fulfill({ json: { data: account('Bob') } }))
   await page.goto('/settings')
   await expect(page.getByLabel('Name', { exact: true })).toHaveValue('Bob')
@@ -138,7 +146,7 @@ test('recommendations follow the selected profile and do not reuse another profi
   const run = {
     id: 1, investor_profile: 'swing', analysis_date: '2026-11-08', model: 'test-model',
     investable_cash: 10000, allocated_amount: 0, reserve_amount: 10000,
-    strategy_summary: 'Swing-only test plan', avoid_list: [], recommendations: [],
+    strategy_summary: 'Swing-only test plan', avoid: [], recommendations: [],
   }
   await page.route('**/api/portfolios/1/recommendations?*', async (route) => {
     const profile = new URL(route.request().url()).searchParams.get('profile') ?? ''
@@ -162,4 +170,14 @@ test('recommendations follow the selected profile and do not reuse another profi
   await page.getByRole('group', { name: 'Investor profile' }).getByRole('button', { name: 'Long term', exact: true }).click()
   await expect(page.getByText('Swing-only test plan')).toHaveCount(0)
   await expect(page.getByRole('button', { name: 'Get recommendations' })).toBeVisible()
+})
+
+test('a private, invite-only site sends visitors to sign-in and offers no sign-up', async ({ page }) => {
+  await page.unrouteAll()
+  await mockApi(page, { ...openSite, require_login: true, registration_open: false })
+  await page.goto('/stocks')
+  await expect(page).toHaveURL(/\/login$/)
+  await expect(page.getByRole('button', { name: 'Create account', exact: true })).toHaveCount(0)
+  await expect(page.getByText('Accounts are by invitation.', { exact: false })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Browse market data without signing in' })).toHaveCount(0)
 })

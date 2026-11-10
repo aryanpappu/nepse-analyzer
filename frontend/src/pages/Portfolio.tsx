@@ -746,7 +746,7 @@ function RecommendationsCard({
             </div>
           )}
 
-          {run.avoid !== null && run.avoid.length > 0 && (
+          {run.avoid != null && run.avoid.length > 0 && (
             <div>
               <p className="mb-1 text-xs font-semibold uppercase text-slate-500">
                 Deliberately passed over
