@@ -1,0 +1,77 @@
+# Test exports are private unless explicitly synthetic. Later rules still apply.
+**/tests/**/*.xlsx
+**/tests/**/*.xls
+**/tests/**/*.csv
+!/backend/tests/Fixtures/Synthetic/**/*.xlsx
+!/backend/tests/Fixtures/Synthetic/**/*.xls
+!/backend/tests/Fixtures/Synthetic/**/*.csv
+
+# Dependencies and generated output
+**/node_modules/
+**/vendor/
+**/dist/
+**/*.tsbuildinfo
+**/.phpunit.cache/
+**/.phpunit.result.cache
+.DS_Store
+
+# Local secrets and runtime data
+**/.env
+**/.env.*
+!**/.env.example
+**/auth.json
+backend/storage/logs/*
+backend/storage/framework/cache/data/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+backend/storage/app/private/*
+backend/storage/*.key
+backend/bootstrap/cache/*.php
+backend/database/*.sqlite*
+backend/backup-pre-laravel12/
+
+# Personal financial exports at the repository root
+/*.csv
+/*.xlsx
+/*.xls
+/*.pdf
+
+# Local editor, cloud, and assistant settings
+.idea/
+.vscode/
+.claude/
+.codex/
+.aws/
+
+# Publish the empty production configuration template.
+!.env.production.example
+
+# Database backups and client credential files
+/backups/
+*.sql.gz
+*.sql.gz.sha256
+*.mysql.cnf
+
+# Browser test traces may include account UI data
+frontend/test-results/
+frontend/playwright-report/
+
+# Private assistant guide: contains the owner's real portfolio figures
+/CLAUDE.md
+
+# Private financial fixtures and credential material
+*.pem
+*.key
+*.sql
+*.sql.gz
+*.sql.bz2
+*.sql.xz
+**/private-fixtures/
+**/private-fixture/
+**/credentials/
+**/backups/
+**/backup/
+*.bak
+*.backup
+*.orig
+

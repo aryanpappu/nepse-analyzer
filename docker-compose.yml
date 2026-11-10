@@ -1,0 +1,179 @@
+# ---------------------------------------------------------------------------
+# Full containerised stack.
+#
+# For LOCAL development you do NOT need this — the project is configured to use
+# your native MySQL on 127.0.0.1:3306 and native Redis on 127.0.0.1:6379. Just
+# run `php artisan serve` and `npm run dev`. See README.md.
+#
+# This file is for running the whole thing in containers (a clean machine, CI,
+# or a small deployment).
+#
+#   docker compose up -d --build
+#   docker compose exec app php artisan migrate --seed
+#   docker compose exec app php artisan nepse:scrape
+#
+# Note: the database service is MySQL, not PostgreSQL, so that the containerised
+# stack and the documented local setup run the exact same SQL dialect. Keeping
+# two dialects in one project is a reliable way to ship a migration that works
+# in development and fails in production.
+# ---------------------------------------------------------------------------
+
+services:
+  app:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./backend:/var/www
+      - /var/www/vendor
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-nepse_analyzer}
+      DB_USERNAME: ${DB_USERNAME:-nepse}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+      REDIS_CLIENT: phpredis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
+      SESSION_DRIVER: redis
+      FRONTEND_URL: http://localhost:5173
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - '${APP_PORT:-8000}:80'
+    volumes:
+      - ./backend:/var/www
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+
+  # Processes the scrape and AI analysis jobs. Separate from the web container
+  # so a long-running analysis batch never blocks an HTTP request.
+  #
+  # Horizon supervises the worker pool itself, so this is one process, not one
+  # per queue: the supervisors and their process counts live in
+  # backend/config/horizon.php. It must be stopped with SIGTERM
+  # (`docker compose stop queue`, which Compose sends by default) so workers
+  # finish the job in hand — a long crawl killed mid-flight is re-run from the
+  # start. `stop_grace_period` gives them room to do that.
+  queue:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    working_dir: /var/www
+    command: php artisan horizon
+    stop_signal: SIGTERM
+    stop_grace_period: 120s
+    volumes:
+      - ./backend:/var/www
+      - /var/www/vendor
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_DATABASE: ${DB_DATABASE:-nepse_analyzer}
+      DB_USERNAME: ${DB_USERNAME:-nepse}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+      REDIS_HOST: redis
+      QUEUE_CONNECTION: redis
+      CACHE_STORE: redis
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # Runs the cron schedule (daily scrape at 16:00 NPT, analysis at 16:30).
+  scheduler:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    working_dir: /var/www
+    command: php artisan schedule:work
+    volumes:
+      - ./backend:/var/www
+      - /var/www/vendor
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_DATABASE: ${DB_DATABASE:-nepse_analyzer}
+      DB_USERNAME: ${DB_USERNAME:-nepse}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+      REDIS_HOST: redis
+      QUEUE_CONNECTION: redis
+      CACHE_STORE: redis
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    image: node:20-alpine
+    restart: unless-stopped
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    ports:
+      - '${VITE_PORT:-5173}:5173'
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      # Inside the network the API is reachable at the nginx service.
+      VITE_API_PROXY: http://nginx:80
+    depends_on:
+      - nginx
+
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    ports:
+      # 3307 on the host so it cannot collide with a native MySQL on 3306.
+      - '${DB_PORT_EXTERNAL:-3307}:3306'
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-nepse_analyzer}
+      MYSQL_USER: ${DB_USERNAME:-nepse}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootsecret}
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'no'
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      # Depending services must wait for a database that can actually answer,
+      # not merely a container that has started.
+      test: ['CMD', 'mysqladmin', 'ping', '-h', '127.0.0.1', '-u', 'root', '-p${DB_ROOT_PASSWORD:-rootsecret}']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - '${REDIS_PORT_EXTERNAL:-6380}:6379'
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  mysql-data:
+  redis-data:

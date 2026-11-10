@@ -1,0 +1,21 @@
+# Never bake local credentials, personal data, or build artifacts into an image.
+.env
+.env.*
+!.env.example
+auth.json
+.git
+node_modules
+vendor
+backup-pre-laravel12
+.phpunit.cache
+.phpunit.result.cache
+storage/logs/*
+storage/app/private/*
+storage/app/public/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/*.key
+bootstrap/cache/*.php
+database/*.sqlite*
+public/hot

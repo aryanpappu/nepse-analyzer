@@ -1,0 +1,306 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+# A second push to the same branch makes the first run's answer worthless.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Backend: format, syntax, migrations, tests.
+  #
+  # On the database: the test suite needs no database server. Every one of the
+  # Unit tests is pure (parsers, indicators, scoring, fiscal-year maths) and the
+  # Feature suite rewrites the connection to sqlite `:memory:` for itself inside
+  # `tests/FeatureTestCase.php` — deliberately there rather than in
+  # `phpunit.xml`, whose `DB_CONNECTION` lines stay commented out so the
+  # pure-unit suite keeps running against whatever `.env` describes. This was
+  # verified by running the whole suite with both MySQL and Redis unreachable:
+  # all tests still passed.
+  #
+  # What CI *does* have to provide is an `.env`, because `php artisan test`
+  # boots the framework and that needs an `APP_KEY`. It is generated from
+  # `.env.example`, which is the committed description of a working
+  # environment — so CI cannot drift from it silently.
+  #
+  # MySQL and Redis are still started, for three reasons that are worth the
+  # ~15s:
+  #   1. `php artisan migrate` is the only way to prove the 33 migrations
+  #      actually apply. Nothing else in the repo checks that, and one of them
+  #      (`..._add_investor_profile_to_stock_signals_table`) issues a raw
+  #      `SHOW INDEX FROM`, which is MySQL-only — sqlite can never exercise it.
+  #      Production deploys run these migrations; now CI does too.
+  #   2. `.env.example` describes a MySQL + Redis environment. Handing the suite
+  #      an `.env` that points at services which do not exist means any test
+  #      that ever touches the default connection fails for the wrong reason.
+  #   3. The Feature suite is growing. When it wants a real connection or the
+  #      Redis-backed AI spend counter (`GuardsDailySpend`), CI already has
+  #      both and no workflow change is needed.
+  # ---------------------------------------------------------------------------
+  backend:
+    name: Backend (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    strategy:
+      # Report both versions. One failing must not hide the other's result.
+      fail-fast: false
+      matrix:
+        # composer.json requires ^8.2; local development is on 8.4.
+        php: ['8.2', '8.4']
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+          MYSQL_DATABASE: nepse_analyzer
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up PHP ${{ matrix.php }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          # pdo_sqlite/sqlite3 for the Feature suite's in-memory connection,
+          # pdo_mysql for migrations, redis because .env.example pins
+          # REDIS_CLIENT=phpredis, bcmath because brick/math prefers it.
+          extensions: bcmath, curl, dom, fileinfo, intl, mbstring, pdo, pdo_mysql, pdo_sqlite, redis, sqlite3, xml, zip
+          ini-values: error_reporting=E_ALL, memory_limit=512M
+          coverage: none
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Composer downloads
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ runner.os }}-php${{ matrix.php }}-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: |
+            composer-${{ runner.os }}-php${{ matrix.php }}-
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Generate .env
+        run: |
+          cp .env.example .env
+          php artisan key:generate --ansi
+
+      - name: Check formatting (Pint)
+        run: vendor/bin/pint --test
+
+      # PHPStan (the static-analysis job) also reports parse errors, but it is a
+      # separate job and an optional dependency. This gate needs nothing but PHP
+      # and catches the whole class of "it does not even parse" mistakes — e.g.
+      # `$callable?->($arg)`, which is a parse error because `?->` reaches a
+      # property or method, and cannot invoke a closure.
+      - name: Lint PHP syntax
+        run: |
+          status=0
+          while IFS= read -r -d '' file; do
+            if ! php -l -n "$file" > /dev/null 2>&1; then
+              echo "::error file=backend/${file}::PHP syntax error"
+              php -l -n "$file" || true
+              status=1
+            fi
+          done < <(find app bootstrap config database routes tests -name '*.php' -print0)
+          exit "$status"
+
+      - name: Run migrations
+        run: php artisan migrate --force --no-interaction
+
+      - name: Run tests
+        run: php artisan test
+
+  # ---------------------------------------------------------------------------
+  # Static analysis. Kept out of the test matrix so a type error is attributed
+  # to itself rather than to a PHP version, and so it runs in parallel.
+  #
+  # Pinned to 8.4 — the version used for local development — so that what CI
+  # reports is exactly what `vendor/bin/phpstan` reports on a developer machine.
+  # `phpstan.neon` sets `phpVersion` to the 8.2 floor from composer.json, so
+  # analysis still respects the oldest supported runtime.
+  # ---------------------------------------------------------------------------
+  static-analysis:
+    name: Static analysis (PHPStan)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: bcmath, curl, dom, fileinfo, intl, mbstring, pdo, pdo_mysql, pdo_sqlite, redis, sqlite3, xml, zip
+          ini-values: memory_limit=1G
+          coverage: none
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Composer downloads
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ runner.os }}-php8.4-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: |
+            composer-${{ runner.os }}-php8.4-
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      # PHPStan resolves config() and route names by booting the application,
+      # which needs an APP_KEY like the test run does.
+      - name: Generate .env
+        run: |
+          cp .env.example .env
+          php artisan key:generate --ansi
+
+      - name: Cache PHPStan result cache
+        uses: actions/cache@v4
+        with:
+          path: backend/storage/framework/cache/phpstan
+          key: phpstan-${{ runner.os }}-${{ hashFiles('backend/composer.lock', 'backend/phpstan.neon') }}-${{ github.sha }}
+          restore-keys: |
+            phpstan-${{ runner.os }}-${{ hashFiles('backend/composer.lock', 'backend/phpstan.neon') }}-
+            phpstan-${{ runner.os }}-
+
+      - name: Run PHPStan
+        run: |
+          if [ ! -x vendor/bin/phpstan ]; then
+            echo "::error::PHPStan is not installed. Add it with:"
+            echo "::error::  composer require --dev 'larastan/larastan:^3.0'"
+            echo "::error::phpstan.neon is committed and ready; only the dev dependency is missing."
+            exit 1
+          fi
+          vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+
+  # ---------------------------------------------------------------------------
+  # Frontend. All four commands pass today; this keeps it that way.
+  # `npm run build` is `tsc -b && vite build`, so it type-checks the project
+  # references as well — `typecheck` (`tsc --noEmit`) is the cheaper, earlier
+  # signal and runs first.
+  # ---------------------------------------------------------------------------
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # `npm ci` rather than `npm install`: it installs exactly
+      # package-lock.json and fails if the lockfile and manifest disagree.
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+
+  # ---------------------------------------------------------------------------
+  # Dependency advisories, reported but not blocking.
+  #
+  # `composer audit` currently reports 7 advisories across 2 packages, and
+  # Laravel is pinned at 11.55.0 with a known CRLF advisory whose fix is 12.60+.
+  # Failing the build on that would make CI permanently red for a reason no pull
+  # request can fix, so this job surfaces the report and is allowed to fail.
+  # Flip `continue-on-error` to false once the framework upgrade lands.
+  # ---------------------------------------------------------------------------
+  dependency-audit:
+    name: Dependency audit (advisory)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: true
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Audit Composer dependencies
+        run: composer audit --no-interaction
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Audit npm dependencies
+        working-directory: frontend
+        run: npm audit --audit-level=high

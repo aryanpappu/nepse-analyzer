@@ -1,0 +1,151 @@
+name: nepse-production
+
+x-app: &app
+  image: nepse-backend:${RELEASE_TAG:-local}
+  build:
+    context: .
+    dockerfile: backend/Dockerfile.production
+  restart: unless-stopped
+  init: true
+  environment: &app-environment
+    APP_ENV: production
+    APP_DEBUG: 'false'
+    APP_KEY: ${APP_KEY:?Set APP_KEY in .env.production}
+    APP_URL: https://${APP_DOMAIN:?Set APP_DOMAIN in .env.production}
+    FRONTEND_URL: https://${APP_DOMAIN:?Set APP_DOMAIN in .env.production}
+    DB_CONNECTION: mysql
+    DB_HOST: mysql
+    DB_PORT: '3306'
+    DB_DATABASE: ${DB_DATABASE:-nepse_analyzer}
+    DB_USERNAME: ${DB_USERNAME:-nepse}
+    DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env.production}
+    REDIS_CLIENT: phpredis
+    REDIS_HOST: redis
+    REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env.production}
+    REDIS_PORT: '6379'
+    CACHE_STORE: redis
+    QUEUE_CONNECTION: redis
+    SESSION_DRIVER: redis
+    SESSION_SECURE_COOKIE: 'true'
+    SESSION_ENCRYPT: 'true'
+    LOG_CHANNEL: stderr
+    APP_NAME: ${APP_NAME:-NEPSE Analyzer}
+    APP_TIMEZONE: ${APP_TIMEZONE:-Asia/Kathmandu}
+    MAIL_MAILER: ${MAIL_MAILER:-smtp}
+    MAIL_SCHEME: ${MAIL_SCHEME:-smtp}
+    MAIL_HOST: ${MAIL_HOST:-}
+    MAIL_PORT: ${MAIL_PORT:-587}
+    MAIL_USERNAME: ${MAIL_USERNAME:-}
+    MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+    MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-}
+    MAIL_FROM_NAME: ${MAIL_FROM_NAME:-NEPSE Analyzer}
+    ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+    ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+    AI_DRIVER: ${AI_DRIVER:-gemini}
+    GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    GEMINI_DAILY_CALL_LIMIT: ${GEMINI_DAILY_CALL_LIMIT:-100}
+    ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    ANTHROPIC_DAILY_CALL_LIMIT: ${ANTHROPIC_DAILY_CALL_LIMIT:-100}
+    NEPSE_ANALYSIS_MAX_PRICE_AGE_DAYS: ${NEPSE_ANALYSIS_MAX_PRICE_AGE_DAYS:-7}
+    NEPSE_ANALYSIS_MAX_NAV_AGE_DAYS: ${NEPSE_ANALYSIS_MAX_NAV_AGE_DAYS:-45}
+    PUBLIC_OPERATOR_NAME: ${PUBLIC_OPERATOR_NAME:-}
+    PUBLIC_CONTACT_EMAIL: ${PUBLIC_CONTACT_EMAIL:-}
+    PUBLIC_PRIVACY_URL: ${PUBLIC_PRIVACY_URL:-}
+    PUBLIC_TERMS_URL: ${PUBLIC_TERMS_URL:-}
+    MARKET_DATA_PERMISSION_CONFIRMED: ${MARKET_DATA_PERMISSION_CONFIRMED:-false}
+    SCHEDULER_HEARTBEAT_MAX_AGE: ${SCHEDULER_HEARTBEAT_MAX_AGE:-180}
+    PIPELINE_HEARTBEAT_MAX_AGE: ${PIPELINE_HEARTBEAT_MAX_AGE:-4500}
+    AI_HEARTBEAT_MAX_AGE: ${AI_HEARTBEAT_MAX_AGE:-600}
+  volumes:
+    - app-storage:/var/www/storage
+  depends_on:
+    mysql:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  networks: [application]
+
+services:
+  app:
+    <<: *app
+
+  queue:
+    <<: *app
+    command: [php, artisan, horizon]
+    stop_signal: SIGTERM
+    # Allow the longest configured pipeline job to finish before forced termination.
+    stop_grace_period: 3700s
+
+  scheduler:
+    <<: *app
+    command: [php, artisan, schedule:work]
+    stop_grace_period: 120s
+
+  migrate:
+    <<: *app
+    profiles: [maintenance]
+    restart: 'no'
+    command: [php, artisan, migrate, --force]
+
+  edge:
+    image: nepse-edge:${RELEASE_TAG:-local}
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.edge
+    restart: unless-stopped
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?Set APP_DOMAIN in .env.production}
+      ACME_EMAIL: ${ACME_EMAIL:?Set ACME_EMAIL in .env.production}
+    ports:
+      - '80:80'
+      - '443:443'
+      - '443:443/udp'
+    volumes:
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on: [app]
+    networks: [application]
+
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-nepse_analyzer}
+      MYSQL_USER: ${DB_USERNAME:-nepse}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env.production}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Set DB_ROOT_PASSWORD in .env.production}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: [CMD-SHELL, 'MYSQL_PWD="$$MYSQL_PASSWORD" mysql -u "$$MYSQL_USER" -D "$$MYSQL_DATABASE" -e "SELECT 1" >/dev/null 2>&1']
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    networks: [application]
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env.production}
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env.production}
+    command: [sh, -c, 'exec redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD" --maxmemory 512mb --maxmemory-policy noeviction']
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [application]
+
+networks:
+  application:
+
+volumes:
+  app-storage:
+  mysql-data:
+  redis-data:
+  caddy-data:
+  caddy-config:

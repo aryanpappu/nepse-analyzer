@@ -1,0 +1,119 @@
+# ---------------------------------------------------------------------------
+# Static analysis (Larastan / PHPStan)
+#
+# Install with:
+#
+#   composer require --dev "larastan/larastan:^3.0"
+#
+# Larastan 3.x is the line that targets Laravel 11/12 on PHP 8.2+, and it pulls
+# PHPStan ^2.0 in with it. Nothing else is required — see the `includes` note
+# below on why `phpstan/extension-installer` is deliberately not used.
+#
+# ---------------------------------------------------------------------------
+# Why level 5
+#
+# Level 5 is the first level at which PHPStan checks the *types of arguments*
+# passed to functions and methods. That is not a compromise, it is the floor
+# for the thing this project needs analysis for: `Carbon::diffInDays()` returns
+# a float in Carbon 3, and a call site handed it to an `?int` parameter. Under
+# `declare(strict_types=1)` that is a fatal TypeError, and it stayed hidden
+# because the unit suite is deliberately DB-free, so the line never ran until
+# production. Levels 0-4 do not check argument types at all and would not have
+# reported it.
+#
+# Everything below 5 comes along for free and is well matched to this codebase:
+# 210 of 211 files in `app/` declare strict types, there is not one bare
+# `array $param` type hint, and generic array/list docblocks outnumber
+# unparameterised ones roughly 7:1.
+#
+# What level 6 would cost: level 6 requires a value type on every iterable, and
+# a type on every parameter, return and property. The gap is measurable —
+# roughly 63 `@param`/`@return`/`@var array` docblocks in `app/` that stop at
+# `array` instead of `array<...>`/`list<...>`, plus untyped closure parameters.
+# That is real work with real payoff (array shapes are where the scraper and
+# playbook code carries most of its meaning), but it is annotation work, not
+# bug-fixing, and it should be a deliberate follow-up rather than the bar the
+# first green build has to clear.
+#
+# If this first run reports more than a handful of findings, burn them down
+# rather than lowering the level. If they need to be deferred, snapshot them:
+#
+#   vendor/bin/phpstan analyse --generate-baseline
+#
+# then add `- phpstan-baseline.neon` to `includes` below and shrink the baseline
+# over time. A baseline keeps level 5 enforced for all *new* code, which a lower
+# level would not.
+# ---------------------------------------------------------------------------
+
+includes:
+    # Registered explicitly rather than through `phpstan/extension-installer`.
+    # The installer is a Composer plugin and would have to be allow-listed under
+    # `config.allow-plugins` in composer.json; an explicit include needs no
+    # manifest change and leaves no doubt about what is loaded.
+    - vendor/larastan/larastan/extension.neon
+
+    # Measured on the first real run: 484 findings at level 5, almost all
+    # Eloquent generic-inference gaps (a scope called on HasMany, a model
+    # method on an un-narrowed Model, map() yielding the base Model) rather
+    # than defects. Baselined so level 5 is enforced on every NEW line while
+    # the existing debt is burnt down; lowering the level instead would have
+    # dropped argument-type checking, which is the whole reason for adding
+    # static analysis here.
+    - phpstan-baseline.neon
+
+parameters:
+    level: 5
+
+    paths:
+        - app
+        - bootstrap
+        - config
+        - database
+        - routes
+        - tests
+
+    excludePaths:
+        analyse:
+            # Framework-generated caches, not source.
+            - bootstrap/cache
+
+    # Analyse against the whole supported runtime range: the 8.2 floor declared
+    # in composer.json through the 8.4 used for local development. This reports
+    # both "does not exist on 8.2" and "deprecated in 8.4" in one pass.
+    phpVersion:
+        min: 80200
+        max: 80400
+
+    # Keep the result cache out of the repository root; the CI workflow caches
+    # this directory between runs.
+    tmpDir: storage/framework/cache/phpstan
+
+    parallel:
+        maximumNumberOfProcesses: 4
+
+    # Larastan: flag `env()` used anywhere but `config/`. This is a correctness
+    # rule here, not style — once `php artisan config:cache` has run, `env()`
+    # outside a config file returns null, so a tunable read that way silently
+    # loses its value in production. The codebase already honours this (zero
+    # violations at the time of writing, and CLAUDE.md states the convention);
+    # turning it on stops it regressing.
+    noEnvCallsOutsideOfConfig: true
+
+    # Off deliberately. Larastan can type-check Eloquent attribute access, but
+    # none of the 23 models in app/Models carry `@property` annotations yet, so
+    # enabling this now would bury real findings. The path to switching it on is
+    # to generate the annotations first (`laravel-ide-helper`'s `ide-helper:models`),
+    # then flip this to true — worth doing, but as its own change.
+    checkModelProperties: false
+
+    # Do not treat a docblock as proof. Where a `@var`/`@param` annotation and
+    # the native type disagree, this stops PHPStan reporting the resulting
+    # "always true"/"never null" conditions as dead code — the annotation is the
+    # less trustworthy of the two, and defensive checks against untrusted
+    # scraped input are intentional in this codebase.
+    treatPhpDocTypesAsCertain: false
+
+    # No `ignoreErrors` entries on purpose. PHPStan fails on an ignore pattern
+    # that matches nothing (`reportUnmatchedIgnoredErrors` defaults to true), so
+    # suppressions must be added in response to a real reported error, never
+    # pre-emptively.

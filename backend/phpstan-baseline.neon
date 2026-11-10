@@ -1,0 +1,2227 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$conviction\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/AnalyzePortfolioCommand.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$estimated_cost\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/AnalyzePortfolioCommand.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$rank\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/AnalyzePortfolioCommand.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$stock\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/AnalyzePortfolioCommand.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$suggested_price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/AnalyzePortfolioCommand.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$suggested_quantity\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/AnalyzePortfolioCommand.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 3
+			path: app/Console/Commands/AnalyzeStocksCommand.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,object\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Console/Commands/BackfillDripCommand.php
+
+		-
+			message: '#^Empty array passed to foreach\.$#'
+			identifier: foreach.emptyArray
+			count: 1
+			path: app/Console/Commands/ImportCashStatementCommand.php
+
+		-
+			message: '#^Offset ''closing_net_worth'' does not exist on string\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Console/Commands/ImportCashStatementCommand.php
+
+		-
+			message: '#^Offset ''deposits'' does not exist on string\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Console/Commands/ImportCashStatementCommand.php
+
+		-
+			message: '#^Offset ''difference'' does not exist on string\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Console/Commands/ImportCashStatementCommand.php
+
+		-
+			message: '#^Offset ''ledger_implied_capital'' does not exist on string\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Console/Commands/ImportCashStatementCommand.php
+
+		-
+			message: '#^Offset ''money_in'' does not exist on string\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Console/Commands/ImportCashStatementCommand.php
+
+		-
+			message: '#^Offset ''money_out'' does not exist on string\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Console/Commands/ImportCashStatementCommand.php
+
+		-
+			message: '#^Offset ''net_injected'' does not exist on string\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Console/Commands/ImportCashStatementCommand.php
+
+		-
+			message: '#^Offset ''note'' does not exist on string\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Console/Commands/ImportCashStatementCommand.php
+
+		-
+			message: '#^Offset ''profit'' does not exist on string\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Console/Commands/ImportCashStatementCommand.php
+
+		-
+			message: '#^Offset ''simple_return_percent'' does not exist on string\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Console/Commands/ImportCashStatementCommand.php
+
+		-
+			message: '#^Offset ''withdrawals'' does not exist on string\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Console/Commands/ImportCashStatementCommand.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 5
+			path: app/Console/Commands/ListCashPlacementsCommand.php
+
+		-
+			message: '#^Cannot call method gt\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Console/Commands/ListCashPlacementsCommand.php
+
+		-
+			message: '#^Cannot call method lte\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Console/Commands/ListCashPlacementsCommand.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Console/Commands/ListCashPlacementsCommand.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$symbol\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/ScrapeCorporateActionsCommand.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 3
+			path: app/Console/Commands/ScrapeCorporateActionsCommand.php
+
+		-
+			message: '#^Offset ''reason'' does not exist on string\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Console/Commands/ScrapeCorporateActionsCommand.php
+
+		-
+			message: '#^Offset ''symbol'' does not exist on string\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Console/Commands/ScrapeCorporateActionsCommand.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>symbol" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Console/Commands/ScrapeCorporateActionsCommand.php
+
+		-
+			message: '#^Offset ''reason'' does not exist on string\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Console/Commands/ScrapeFundamentalsCommand.php
+
+		-
+			message: '#^Offset ''symbol'' does not exist on string\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Console/Commands/ScrapeFundamentalsCommand.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Console/Commands/ScrapeIndicesCommand.php
+
+		-
+			message: '#^Offset ''index'' does not exist on non\-falsy\-string\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Console/Commands/ScrapeIndicesCommand.php
+
+		-
+			message: '#^Offset ''name'' does not exist on string\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Console/Commands/ScrapeIndicesCommand.php
+
+		-
+			message: '#^Offset ''reason'' does not exist on non\-falsy\-string\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Console/Commands/ScrapeIndicesCommand.php
+
+		-
+			message: '#^Offset ''reason'' does not exist on string\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Console/Commands/ScrapeIndicesCommand.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Console/Commands/ScrapeNepseCommand.php
+
+		-
+			message: '#^Offset ''reason'' does not exist on string\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Console/Commands/ScrapeNepseCommand.php
+
+		-
+			message: '#^Offset ''symbol'' does not exist on string\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Console/Commands/ScrapeNepseCommand.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Console/Commands/SyncFundNavsCommand.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/AuthController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\HasMany\:\:notVoided\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/CashController.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Api/CashController.php
+
+		-
+			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Http/Controllers/Api/CashController.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: mixed$#'
+			identifier: match.unhandled
+			count: 1
+			path: app/Http/Controllers/Api/CashController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/CashController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int, type\: string, account\: string, amount\: float, balance_after\: float\|null, reference\: string\|null, notes\: string\|null, transacted_on\: mixed, voided\: bool, void_reason\: string\|null, corrected\: bool, corrected_at\: mixed, voided_at\: mixed, original_values\: string\|null\}, Closure\(App\\Models\\CashTransaction\)\: array\{id\: int, type\: string, account\: string, amount\: float, balance_after\: float\|null, reference\: string\|null, notes\: string\|null, transacted_on\: mixed, voided\: bool, void_reason\: string\|null, corrected\: bool, corrected_at\: mixed, voided_at\: mixed, original_values\: string\|null\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/CashController.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 5
+			path: app/Http/Controllers/Api/CashPlacementController.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 3
+			path: app/Http/Controllers/Api/CashPlacementController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ComparisonController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$symbol\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/HoldingController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\StockPrice\:\:\$advances\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/MarketController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\StockPrice\:\:\$declines\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/MarketController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\StockPrice\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/MarketController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\StockPrice\:\:\$symbol\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/MarketController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\StockPrice\:\:\$total_turnover\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/MarketController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\StockPrice\:\:\$total_volume\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/MarketController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\StockPrice\:\:\$traded_scrips\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/MarketController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\StockPrice\:\:\$unchanged\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/MarketController.php
+
+		-
+			message: '#^Cannot call method diffInSeconds\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Api/MarketController.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Api/MarketController.php
+
+		-
+			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Api/MarketController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\StockPrice\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 2
+			path: app/Http/Controllers/Api/MarketController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PlaybookController.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 3
+			path: app/Http/Controllers/Api/PlaybookController.php
+
+		-
+			message: '#^Cannot call method holdLabel\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Api/PlaybookController.php
+
+		-
+			message: '#^Cannot call method label\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Api/PlaybookController.php
+
+		-
+			message: '#^Cannot call method shortLabel\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Api/PlaybookController.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Http/Controllers/Api/PlaybookController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$action\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PortfolioAnalysisController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$allocation_percent\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PortfolioAnalysisController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$conviction\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PortfolioAnalysisController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$estimated_cost\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PortfolioAnalysisController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$rank\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PortfolioAnalysisController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$reason\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PortfolioAnalysisController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$risk_level\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PortfolioAnalysisController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$stock\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/PortfolioAnalysisController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$stop_loss\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PortfolioAnalysisController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$suggested_price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PortfolioAnalysisController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$suggested_quantity\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PortfolioAnalysisController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$target_price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PortfolioAnalysisController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$time_horizon\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PortfolioAnalysisController.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Http/Controllers/Api/PortfolioAnalysisController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/PortfolioAnalysisController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$analysis_date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PortfolioController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$concentration_risks\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PortfolioController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$diversification_grade\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PortfolioController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$health_score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PortfolioController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$model\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PortfolioController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$rebalancing_actions\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PortfolioController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$risk_level\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PortfolioController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sector_allocation\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PortfolioController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$strengths\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PortfolioController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$summary\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PortfolioController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$weaknesses\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/PortfolioController.php
+
+		-
+			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Http/Controllers/Api/PortfolioImportController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\PortfolioImport\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/PortfolioImportController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$analysis_date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$atr_14\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$bollinger_lower\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$bollinger_middle\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$bollinger_upper\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$book_value\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$capital_adequacy_ratio\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$close\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$concerns\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$dividend_percent\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$dividend_sustainability_score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$dividend_yield\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$ema_12\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$ema_26\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$eps\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fair_value_high\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fair_value_low\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$financial_health_score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fiscal_period\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$high\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$low\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$macd\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$macd_histogram\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$macd_signal\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$npl_percent\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$open\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$pb_ratio\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$pe_ratio\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$quality_score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$roe\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$rsi_14\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sma_20\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sma_200\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sma_50\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$strengths\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$summary\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$trade_date\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$trend\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$trend_strength\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$turnover\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$valuation\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$volume\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:rsiZone\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Parameter \#3 \$callback of static method Illuminate\\Cache\\Repository\:\:remember\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/StockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$analysis_date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/StockResource.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$confidence\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/StockResource.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/StockResource.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$risk_level\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/StockResource.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$rsi_14\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/StockResource.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$signal\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/StockResource.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$slug\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/StockResource.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$trend\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/StockResource.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$trend_strength\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/StockResource.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$turnover\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/StockResource.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$volume\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/StockResource.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isStale\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/StockResource.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:rsiZone\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/StockResource.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Resources/StockResource.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/StockSignalResource.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sector\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/StockSignalResource.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$symbol\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/StockSignalResource.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 4
+			path: app/Http/Resources/StockSignalResource.php
+
+		-
+			message: '#^Cannot call method label\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Http/Resources/StockSignalResource.php
+
+		-
+			message: '#^Cannot call method shortLabel\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Resources/StockSignalResource.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Resources/StockSignalResource.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Jobs/AnalyzeStockJob.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Jobs/ScrapeCorporateActionsJob.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Jobs/ScrapeDailyPricesJob.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$last_price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/PortfolioHolding.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$last_traded_on\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/PortfolioHolding.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: string$#'
+			identifier: match.unhandled
+			count: 1
+			path: app/Models/PortfolioTransaction.php
+
+		-
+			message: '#^Cannot call method lt\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Models/StockSignal.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/AI/BuyRecommendationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$pe_ratio\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/AI/BuyRecommendationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$rsi_14\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/AI/BuyRecommendationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$trend\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/AI/BuyRecommendationService.php
+
+		-
+			message: '#^Parameter \#1 \$array of function usort contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/AI/BuyRecommendationService.php
+
+		-
+			message: '#^Parameter \#2 \$callback of function usort contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/AI/BuyRecommendationService.php
+
+		-
+			message: '#^Parameter \#2 \$fundamental of method App\\Services\\AI\\Prompts\\FundamentalAnalysisPrompt\:\:user\(\) expects App\\Models\\StockFundamental\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/AI/FundamentalAnalyzer.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/AI/Prompts/FundamentalAnalysisPrompt.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/AI/Prompts/FundamentalAnalysisPrompt.php
+
+		-
+			message: '#^Cannot call method format\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/AI/Prompts/MutualFundSignalPrompt.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/AI/Prompts/MutualFundSignalPrompt.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/AI/Prompts/StockSignalPrompt.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/AI/Prompts/StockSignalPrompt.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Services/AI/Prompts/StockSignalPrompt.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/AI/StockSignalAnalyzer.php
+
+		-
+			message: '#^Parameter \#2 \$history of method App\\Services\\AI\\Prompts\\StockSignalPrompt\:\:user\(\) expects Illuminate\\Support\\Collection\<int, App\\Models\\StockPrice\>, Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/AI/StockSignalAnalyzer.php
+
+		-
+			message: '#^Parameter \#3 \$indicator of method App\\Services\\AI\\Prompts\\StockSignalPrompt\:\:user\(\) expects App\\Models\\TechnicalIndicator\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/AI/StockSignalAnalyzer.php
+
+		-
+			message: '#^Parameter \#4 \$fundamental of method App\\Services\\AI\\Prompts\\StockSignalPrompt\:\:user\(\) expects App\\Models\\StockFundamental\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/AI/StockSignalAnalyzer.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$base_rate\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Analysis/FundamentalSnapshot.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$book_value\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Analysis/FundamentalSnapshot.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$capital_adequacy_ratio\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Analysis/FundamentalSnapshot.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$close\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Analysis/FundamentalSnapshot.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$distributable_eps\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/Analysis/FundamentalSnapshot.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$distributable_eps_yield\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Analysis/FundamentalSnapshot.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$dividend_yield\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Analysis/FundamentalSnapshot.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$eps\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Analysis/FundamentalSnapshot.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fiscal_period\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Analysis/FundamentalSnapshot.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Analysis/FundamentalSnapshot.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$npl_percent\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Analysis/FundamentalSnapshot.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$paid_up_capital\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Analysis/FundamentalSnapshot.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$pb_ratio\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Analysis/FundamentalSnapshot.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$pe_ratio\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Analysis/FundamentalSnapshot.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$roa\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Analysis/FundamentalSnapshot.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$roe\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Analysis/FundamentalSnapshot.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$share_capital\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Analysis/FundamentalSnapshot.php
+
+		-
+			message: '#^Parameter \#1 \$price of static method App\\Services\\Analysis\\FundamentalSnapshot\:\:premium\(\) expects App\\Models\\StockPrice\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Analysis/FundamentalSnapshot.php
+
+		-
+			message: '#^Parameter \#1 \$price of static method App\\Services\\Analysis\\FundamentalSnapshot\:\:upside\(\) expects App\\Models\\StockPrice\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Analysis/FundamentalSnapshot.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/Import/CashStatementImportService.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/Import/CashStatementImportService.php
+
+		-
+			message: '#^Empty array passed to foreach\.$#'
+			identifier: foreach.emptyArray
+			count: 1
+			path: app/Services/Import/CashStatementImportService.php
+
+		-
+			message: '#^Negated boolean expression is always true\.$#'
+			identifier: booleanNot.alwaysTrue
+			count: 1
+			path: app/Services/Import/CashStatementImportService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\CashStatementEntry\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/Import/CashStatementImportService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,string\>\:\:filter\(\) expects \(callable\(string, 0\)\: bool\)\|null, Closure\(array\)\: bool given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Import/CashStatementImportService.php
+
+		-
+			message: '#^Parameter \#1 \$keyBy of method Illuminate\\Support\\Collection\<int,string\>\:\:keyBy\(\) expects \(callable\(string, 0\)\: string\)\|list\<Closure\|string\>\|string, Closure\(array, int\)\: string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Import/CashStatementImportService.php
+
+		-
+			message: '#^Parameter \#1 \$portfolio of method App\\Services\\Import\\CashStatementImportService\:\:reconcile\(\) expects App\\Models\\Portfolio, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Import/CashStatementImportService.php
+
+		-
+			message: '#^Parameter \#1 \$portfolio of method App\\Services\\Portfolio\\CashLedger\:\:deposit\(\) expects App\\Models\\Portfolio, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Import/CashStatementImportService.php
+
+		-
+			message: '#^Parameter \#1 \$portfolio of method App\\Services\\Portfolio\\CashLedger\:\:record\(\) expects App\\Models\\Portfolio, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Import/CashStatementImportService.php
+
+		-
+			message: '#^Parameter \#1 \$rows of static method App\\Services\\Import\\CashStatementReconciler\:\:totals\(\) expects list\<array\<string, mixed\>\>, array\<0, string\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Import/CashStatementImportService.php
+
+		-
+			message: '#^Parameter \#2 \$changes of method App\\Services\\Import\\CashStatementImportService\:\:applyEdit\(\) expects array\<string, mixed\>, string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Import/CashStatementImportService.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: app/Services/Import/CashStatementImportService.php
+
+		-
+			message: '#^Anonymous function never returns null so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: app/Services/Import/CashStatementOverlapDetector.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between non\-empty\-list\<string\|null\> and array\{\} will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Services/Import/MeroshareCsvParser.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Services/Import/PortfolioImportService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Import/PortfolioImportService.php
+
+		-
+			message: '#^Empty array passed to foreach\.$#'
+			identifier: foreach.emptyArray
+			count: 1
+			path: app/Services/Import/PortfolioImportService.php
+
+		-
+			message: '#^Negated boolean expression is always true\.$#'
+			identifier: booleanNot.alwaysTrue
+			count: 1
+			path: app/Services/Import/PortfolioImportService.php
+
+		-
+			message: '#^Offset ''average_cost'' does not exist on string\.$#'
+			identifier: offsetAccess.notFound
+			count: 2
+			path: app/Services/Import/PortfolioImportService.php
+
+		-
+			message: '#^Offset ''last_price'' does not exist on string\.$#'
+			identifier: offsetAccess.notFound
+			count: 2
+			path: app/Services/Import/PortfolioImportService.php
+
+		-
+			message: '#^Offset ''quantity'' does not exist on string\.$#'
+			identifier: offsetAccess.notFound
+			count: 3
+			path: app/Services/Import/PortfolioImportService.php
+
+		-
+			message: '#^Offset ''rate'' does not exist on string\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Services/Import/PortfolioImportService.php
+
+		-
+			message: '#^Offset ''symbol'' does not exist on string\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Services/Import/PortfolioImportService.php
+
+		-
+			message: '#^Offset ''value'' does not exist on string\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Services/Import/PortfolioImportService.php
+
+		-
+			message: '#^Parameter \#1 \$array of function usort contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/Import/PortfolioImportService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,string\>\:\:filter\(\) expects \(callable\(string, 0\)\: bool\)\|null, Closure\(array\)\: bool given\.$#'
+			identifier: argument.type
+			count: 4
+			path: app/Services/Import/PortfolioImportService.php
+
+		-
+			message: '#^Parameter \#1 \$portfolio of method App\\Services\\Portfolio\\HoldingCalculator\:\:rebuild\(\) expects App\\Models\\Portfolio, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Import/PortfolioImportService.php
+
+		-
+			message: '#^Parameter \#1 \$portfolio of method App\\Services\\Portfolio\\HoldingCalculator\:\:record\(\) expects App\\Models\\Portfolio, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Import/PortfolioImportService.php
+
+		-
+			message: '#^Parameter \#1 \$row of method App\\Services\\Import\\PortfolioImportService\:\:purchaseDate\(\) expects array\<string, mixed\>, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Import/PortfolioImportService.php
+
+		-
+			message: '#^Parameter \#2 \$callback of function usort contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/Import/PortfolioImportService.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: app/Services/Import/PortfolioImportService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/Import/PortfolioImportService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$close\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Services/Indicators/IndicatorPersistenceService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$trade_date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Indicators/IndicatorPersistenceService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$volume\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Indicators/IndicatorPersistenceService.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 4
+			path: app/Services/Playbook/Backtest/HistoricalPlaybookInputFactory.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 3
+			path: app/Services/Playbook/Backtest/PlaybookBacktestService.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/Playbook/Backtest/SessionCalendarReader.php
+
+		-
+			message: '#^Method App\\Services\\Playbook\\PlaybookInputFactory\:\:rangeAggregate\(\) should return Illuminate\\Support\\Collection\<int, object\> but returns Illuminate\\Support\\Collection\<\(int\|string\), stdClass\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/Playbook/PlaybookInputFactory.php
+
+		-
+			message: '#^Parameter \$fundamental of class App\\Services\\Playbook\\PlaybookInputs constructor expects App\\Models\\StockFundamental\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Playbook/PlaybookInputFactory.php
+
+		-
+			message: '#^Parameter \$indicator of class App\\Services\\Playbook\\PlaybookInputs constructor expects App\\Models\\TechnicalIndicator\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Playbook/PlaybookInputFactory.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>sessions" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/Playbook/PlaybookInputFactory.php
+
+		-
+			message: '#^Parameter \#1 \$transactions of method App\\Services\\Portfolio\\PerformanceService\:\:closedTrades\(\) expects Illuminate\\Support\\Collection\<int, App\\Models\\PortfolioTransaction\>, Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Portfolio/CapitalGainsTaxService.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/Portfolio/CashLedger.php
+
+		-
+			message: '#^Property App\\Models\\CashTransaction\:\:\$corrected_at \(string\|null\) does not accept Illuminate\\Support\\Carbon\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Services/Portfolio/CashLedger.php
+
+		-
+			message: '#^Property App\\Models\\CashTransaction\:\:\$original_values \(string\|null\) does not accept array\<string, mixed\>\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Services/Portfolio/CashLedger.php
+
+		-
+			message: '#^Property App\\Models\\CashTransaction\:\:\$voided_at \(string\|null\) does not accept Illuminate\\Support\\Carbon\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Services/Portfolio/CashLedger.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Services/Portfolio/CashPlacementService.php
+
+		-
+			message: '#^Cannot call method copy\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 4
+			path: app/Services/Portfolio/CashPlacementService.php
+
+		-
+			message: '#^Cannot call method gt\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/Portfolio/CashPlacementService.php
+
+		-
+			message: '#^Cannot call method isInterestBearing\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/Portfolio/CashPlacementService.php
+
+		-
+			message: '#^Cannot call method lt\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/Portfolio/CashPlacementService.php
+
+		-
+			message: '#^Cannot call method lte\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 3
+			path: app/Services/Portfolio/CashPlacementService.php
+
+		-
+			message: '#^Parameter \#1 \$portfolio of method App\\Services\\Portfolio\\CashLedger\:\:record\(\) expects App\\Models\\Portfolio, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Services/Portfolio/CashPlacementService.php
+
+		-
+			message: '#^Parameter \#1 \$portfolio of method App\\Services\\Portfolio\\CashPlacementSettlement\:\:settledIds\(\) expects App\\Models\\Portfolio, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Portfolio/CashPlacementService.php
+
+		-
+			message: '#^Parameter \#5 \$basis of method App\\Services\\Portfolio\\InterestAccrualCalculator\:\:accrue\(\) expects App\\Enums\\CompoundingBasis, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Portfolio/CashPlacementService.php
+
+		-
+			message: '#^Parameter \#6 \$payout of method App\\Services\\Portfolio\\InterestAccrualCalculator\:\:accrue\(\) expects App\\Enums\\PayoutHandling, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Portfolio/CashPlacementService.php
+
+		-
+			message: '#^Property App\\Models\\CashPlacement\:\:\$closed_on \(string\|null\) does not accept Illuminate\\Support\\Carbon\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Services/Portfolio/CashPlacementService.php
+
+		-
+			message: '#^Property App\\Models\\CashPlacement\:\:\$status \(string\) does not accept App\\Enums\\CashPlacementStatus\:\:Withdrawn\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Services/Portfolio/CashPlacementService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Portfolio/HoldingCalculator.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$quantity\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Portfolio/HoldingCalculator.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$stock_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Portfolio/HoldingCalculator.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$transacted_on\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Portfolio/HoldingCalculator.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$type\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/Portfolio/HoldingCalculator.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:fees\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/Portfolio/HoldingCalculator.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$stock\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Portfolio/IndexBenchmarkService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$symbol\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/Portfolio/IndexBenchmarkService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$transacted_on\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Portfolio/IndexBenchmarkService.php
+
+		-
+			message: '#^Cannot call method copy\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Services/Portfolio/IndexBenchmarkService.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/Portfolio/IndexBenchmarkService.php
+
+		-
+			message: '#^Method App\\Services\\Portfolio\\IndexBenchmarkService\:\:ledger\(\) should return Illuminate\\Support\\Collection\<int, App\\Models\\PortfolioTransaction\> but returns Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/Portfolio/IndexBenchmarkService.php
+
+		-
+			message: '#^Parameter \#1 \$from of method App\\Services\\Portfolio\\IndexSeries\:\:coverage\(\) expects Illuminate\\Support\\Carbon, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Portfolio/IndexBenchmarkService.php
+
+		-
+			message: '#^Parameter \#1 \$transactions of method App\\Services\\Portfolio\\IndexBenchmarkService\:\:flowsFrom\(\) expects Illuminate\\Support\\Collection\<int, App\\Models\\PortfolioTransaction\>, Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Portfolio/IndexBenchmarkService.php
+
+		-
+			message: '#^Parameter \#2 \$group of method App\\Services\\Portfolio\\IndexBenchmarkService\:\:sectorRow\(\) expects array\{name\: string, slug\: string\|null, holdings\: list\<App\\Models\\PortfolioHolding\>\}, array\{name\: mixed, slug\: mixed, holdings\: list\<Illuminate\\Database\\Eloquent\\Model\>\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Portfolio/IndexBenchmarkService.php
+
+		-
+			message: '#^Parameter \#3 \$from of method App\\Services\\Portfolio\\IndexBenchmarkService\:\:coverageNote\(\) expects Illuminate\\Support\\Carbon, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Portfolio/IndexBenchmarkService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/Portfolio/IndexBenchmarkService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>slug" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/Portfolio/IndexBenchmarkService.php
+
+		-
+			message: '#^Cannot call method copy\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/Portfolio/IndexSeriesRepository.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\MarketIndex\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/Portfolio/IndexSeriesRepository.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$average_cost\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Portfolio/PerformanceService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$quantity\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Portfolio/PerformanceService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$stock\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Portfolio/PerformanceService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$symbol\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/Portfolio/PerformanceService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:currentValue\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/Portfolio/PerformanceService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:unrealizedGain\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/Portfolio/PerformanceService.php
+
+		-
+			message: '#^Cannot call method copy\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 6
+			path: app/Services/Portfolio/PerformanceService.php
+
+		-
+			message: '#^Cannot call method diffInDays\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/Portfolio/PerformanceService.php
+
+		-
+			message: '#^Cannot call method greaterThan\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/Portfolio/PerformanceService.php
+
+		-
+			message: '#^Cannot call method lessThan\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/Portfolio/PerformanceService.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/Portfolio/PerformanceService.php
+
+		-
+			message: '#^Comparison operation "\>" between \*NEVER\* and 0\.0 results in an error\.$#'
+			identifier: greater.invalid
+			count: 4
+			path: app/Services/Portfolio/PerformanceService.php
+
+		-
+			message: '#^Comparison operation "\>" between \*NEVER\* and float results in an error\.$#'
+			identifier: greater.invalid
+			count: 1
+			path: app/Services/Portfolio/PerformanceService.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: string$#'
+			identifier: match.unhandled
+			count: 2
+			path: app/Services/Portfolio/PerformanceService.php
+
+		-
+			message: '#^Parameter \#1 \$array of function usort contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/Portfolio/PerformanceService.php
+
+		-
+			message: '#^Parameter \#1 \$date of static method App\\Services\\Portfolio\\PerformanceService\:\:bucketKey\(\) expects Illuminate\\Support\\Carbon, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Portfolio/PerformanceService.php
+
+		-
+			message: '#^Parameter \#1 \$transactions of method App\\Services\\Portfolio\\PerformanceService\:\:closedTrades\(\) expects Illuminate\\Support\\Collection\<int, App\\Models\\PortfolioTransaction\>, Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Portfolio/PerformanceService.php
+
+		-
+			message: '#^Parameter \#1 \$value of function collect contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/Portfolio/PerformanceService.php
+
+		-
+			message: '#^Parameter \#2 \$callback of function usort contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/Portfolio/PerformanceService.php
+
+		-
+			message: '#^Parameter \#2 \$transactions of method App\\Services\\Portfolio\\PerformanceService\:\:byStock\(\) expects Illuminate\\Support\\Collection\<int, App\\Models\\PortfolioTransaction\>, Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Portfolio/PerformanceService.php
+
+		-
+			message: '#^Parameter \#2 \$transactions of method App\\Services\\Portfolio\\PerformanceService\:\:periods\(\) expects Illuminate\\Support\\Collection\<int, App\\Models\\PortfolioTransaction\>, Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Portfolio/PerformanceService.php
+
+		-
+			message: '#^Parameter \#2 \$transactions of method App\\Services\\Portfolio\\PerformanceService\:\:totals\(\) expects Illuminate\\Support\\Collection\<int, App\\Models\\PortfolioTransaction\>, Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Portfolio/PerformanceService.php
+
+		-
+			message: '#^Parameter \#3 \$start of method App\\Services\\Portfolio\\PerformanceService\:\:fixedDepositValue\(\) expects Illuminate\\Support\\Carbon, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Portfolio/PerformanceService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>symbol" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/Portfolio/PerformanceService.php
+
+		-
+			message: '#^Cannot call method copy\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 3
+			path: app/Services/Portfolio/PlacementValuationService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\CashPlacement\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/Portfolio/PlacementValuationService.php
+
+		-
+			message: '#^Cannot call method greaterThan\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/Portfolio/PortfolioTimeSeries.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: string$#'
+			identifier: match.unhandled
+			count: 1
+			path: app/Services/Portfolio/PortfolioTimeSeries.php
+
+		-
+			message: '#^Method App\\Services\\Portfolio\\PortfolioTimeSeries\:\:ledger\(\) should return Illuminate\\Support\\Collection\<int, App\\Models\\PortfolioTransaction\> but returns Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/Portfolio/PortfolioTimeSeries.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Services/Portfolio/PortfolioTimeSeries.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>isStale" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/Portfolio/PortfolioTimeSeries.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>reason" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/Portfolio/PortfolioTimeSeries.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>seriesBacked" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/Portfolio/PortfolioTimeSeries.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>source" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/Portfolio/PortfolioTimeSeries.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$average_cost\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Portfolio/PortfolioValuationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$first_purchased_on\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Portfolio/PortfolioValuationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Portfolio/PortfolioValuationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$instrument_type\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Portfolio/PortfolioValuationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$quantity\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/Portfolio/PortfolioValuationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$realized_gain\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Portfolio/PortfolioValuationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$stock\.$#'
+			identifier: property.notFound
+			count: 8
+			path: app/Services/Portfolio/PortfolioValuationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$stock_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Portfolio/PortfolioValuationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$symbol\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Services/Portfolio/PortfolioValuationService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:currentPrice\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Services/Portfolio/PortfolioValuationService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:currentValue\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: app/Services/Portfolio/PortfolioValuationService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:investedAmount\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Services/Portfolio/PortfolioValuationService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:unrealizedGain\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/Portfolio/PortfolioValuationService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:unrealizedGainPercent\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/Portfolio/PortfolioValuationService.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/Portfolio/PortfolioValuationService.php
+
+		-
+			message: '#^Parameter \#1 \$array of function usort contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 3
+			path: app/Services/Portfolio/PortfolioValuationService.php
+
+		-
+			message: '#^Parameter \#1 \$holdings of method App\\Services\\Portfolio\\PortfolioValuationService\:\:concentration\(\) expects Illuminate\\Support\\Collection\<int, App\\Models\\PortfolioHolding\>, Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Portfolio/PortfolioValuationService.php
+
+		-
+			message: '#^Parameter \#1 \$holdings of method App\\Services\\Portfolio\\PortfolioValuationService\:\:latestNavs\(\) expects Illuminate\\Support\\Collection\<int, App\\Models\\PortfolioHolding\>, Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Portfolio/PortfolioValuationService.php
+
+		-
+			message: '#^Parameter \#1 \$holdings of method App\\Services\\Portfolio\\PortfolioValuationService\:\:markReconciliation\(\) expects Illuminate\\Support\\Collection\<int, App\\Models\\PortfolioHolding\>, Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Portfolio/PortfolioValuationService.php
+
+		-
+			message: '#^Parameter \#1 \$holdings of method App\\Services\\Portfolio\\PortfolioValuationService\:\:sectorAllocation\(\) expects Illuminate\\Support\\Collection\<int, App\\Models\\PortfolioHolding\>, Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Portfolio/PortfolioValuationService.php
+
+		-
+			message: '#^Parameter \#2 \$callback of function usort contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 3
+			path: app/Services/Portfolio/PortfolioValuationService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/Portfolio/PortfolioValuationService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>reason" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/Portfolio/PortfolioValuationService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>seriesBacked" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/Portfolio/PortfolioValuationService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>source" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/Portfolio/PortfolioValuationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Portfolio/PositionAdvisor.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$symbol\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/Portfolio/PositionAdvisor.php
+
+		-
+			message: '#^Cannot call method diffInDays\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/Portfolio/PositionAdvisor.php
+
+		-
+			message: '#^Cannot call method isActionable\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Services/Portfolio/PositionAdvisor.php
+
+		-
+			message: '#^Cannot call method label\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 3
+			path: app/Services/Portfolio/PositionAdvisor.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: \(App\\Services\\Portfolio\\PositionAdvice\|null\), Closure\(App\\Models\\PortfolioHolding\)\: \(App\\Services\\Portfolio\\PositionAdvice\|null\) given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Portfolio/PositionAdvisor.php
+
+		-
+			message: '#^Parameter \#1 \$holdings of method App\\Services\\Portfolio\\PositionAdvisor\:\:latestVerdicts\(\) expects Illuminate\\Support\\Collection\<int, App\\Models\\PortfolioHolding\>, Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Portfolio/PositionAdvisor.php
+
+		-
+			message: '#^Parameter \#1 \$holdings of method App\\Services\\Portfolio\\PositionAdvisor\:\:pricedValue\(\) expects Illuminate\\Support\\Collection\<int, App\\Models\\PortfolioHolding\>, Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Portfolio/PositionAdvisor.php
+
+		-
+			message: '#^Property App\\Services\\Portfolio\\PositionAdvisor\:\:\$valuation is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/Services/Portfolio/PositionAdvisor.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>entry_high" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Services/Portfolio/PositionAdvisor.php
+
+		-
+			message: '#^Cannot call method copy\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/Portfolio/ReturnAttributionService.php
+
+		-
+			message: '#^Cannot call method gt\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/Portfolio/ReturnAttributionService.php
+
+		-
+			message: '#^Cannot call method lte\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/Portfolio/ReturnAttributionService.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/Portfolio/ReturnAttributionService.php
+
+		-
+			message: '#^Method App\\Services\\Portfolio\\ReturnAttributionService\:\:ledger\(\) should return Illuminate\\Support\\Collection\<int, App\\Models\\PortfolioTransaction\> but returns Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/Portfolio/ReturnAttributionService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\BackfillProgress\:\:\$symbol\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Scraper/Backfill/HistoryBackfillService.php
+
+		-
+			message: '#^Method App\\Services\\Scraper\\Backfill\\HistoryBackfillService\:\:statusSummary\(\) should return array\{rows\: Illuminate\\Support\\Collection\<int, object\>, counts\: Illuminate\\Support\\Collection\<string, int\>, estimated_runs_to_clear\: int, calendar_counts\: Illuminate\\Support\\Collection\<string, int\>\} but returns array\{rows\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\BackfillProgress\>, counts\: Illuminate\\Support\\Collection\<\(int\|string\), int\>, estimated_runs_to_clear\: int, calendar_counts\: Illuminate\\Support\\Collection\<\(int\|string\), mixed\>\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/Scraper/Backfill/HistoryBackfillService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/Scraper/InstrumentClassifier.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Scraper/NepseScraperService.php
+
+		-
+			message: '#^Offset ''Banking SubIndex''\|''Development Bank…''\|''Finance Index''\|''Float Index''\|''Hotels And Tourism''\|''HydroPower Index''\|''Insurance''\|''Investment''\|''Life Insurance''\|''Manufacturing And…''\|''Microfinance Index''\|''Mutual Fund''\|''NEPSE Index''\|''Non Life Insurance''\|''Others Index''\|''Sensitive Float…''\|''Sensitive Index''\|''Trading Index'' on array\{''Banking SubIndex''\: 1, ''Development Bank Index''\: 2, ''Finance Index''\: 3, ''Float Index''\: 4, ''Hotels And Tourism''\: 5, ''HydroPower Index''\: 6, Insurance\: 7, ''Life Insurance''\: 8, \.\.\.\} in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.offset
+			count: 1
+			path: app/Services/Scraper/Sources/SharesansarIndexHistorySource.php
+
+		-
+			message: '#^Static method App\\Exceptions\\ScrapeException\:\:markupChanged\(\) invoked with 3 parameters, 2 required\.$#'
+			identifier: arguments.count
+			count: 2
+			path: app/Services/Scraper/Sources/SharesansarQuarterlySource.php
+
+		-
+			message: '#^Offset ''amount'' does not exist on string\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: tests/Feature/Api/CashLedgerTest.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: tests/Feature/Api/CashPlacementTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertTrue\(\) with true will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 1
+			path: tests/Unit/ExampleTest.php
+
+		-
+			message: '#^PHPDoc tag @param references unknown parameter\: \$attributes$#'
+			identifier: parameter.notFound
+			count: 1
+			path: tests/Unit/PerformanceServiceTest.php
+
+		-
+			message: '#^Parameter \#1 \$values of method App\\Services\\Indicators\\TechnicalIndicatorService\:\:bollingerBands\(\) expects list\<float\>, non\-empty\-list\<int\<100, max\>\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: tests/Unit/TechnicalIndicatorServiceTest.php
