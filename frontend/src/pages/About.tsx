@@ -30,6 +30,20 @@ export function About() {
           <p>Entry ranges, stops, and estimated fees are planning inputs. Actual execution, liquidity, fees, and market conditions may differ. This application does not place orders with a broker.</p>
         </div>
       </Card>
+      <section id="disclaimer" className="scroll-mt-6">
+        <Card title="Disclaimer">
+          <div className="space-y-3 text-sm leading-relaxed text-slate-600">
+            <p>This is an educational and research project, offered free and as is. Nothing on this site is financial, investment, tax or legal advice, or a recommendation to buy, sell or hold any security.</p>
+            <p>The authors and operators are not licensed investment advisers, portfolio managers or stockbrokers with the Securities Board of Nepal (SEBON). Investing involves risk, including loss of your capital; past performance and backtests do not predict future results. Consult a licensed professional before investing.</p>
+            <p>This site is independent and not affiliated with NEPSE, SEBON, CDSC/MeroShare or any broker. Trademarks and data belong to their respective owners.</p>
+            <p>To the maximum extent permitted by law, the authors and operators accept no liability for any loss arising from use of this site or its information.</p>
+            <p>
+              The source code is open under the MIT License.{' '}
+              <a className="underline" href="https://github.com/aryanpappu/nepse-analyzer/blob/main/DISCLAIMER.md" target="_blank" rel="noopener noreferrer">Read the full disclaimer</a>.
+            </p>
+          </div>
+        </Card>
+      </section>
       <section id="data-use" className="scroll-mt-6">
         <Card title="How your data is used">
           <div className="space-y-3 text-sm leading-relaxed text-slate-600">

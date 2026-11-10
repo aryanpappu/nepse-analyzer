@@ -2,6 +2,10 @@
 
 Stock analysis and portfolio management for the Nepal Stock Exchange.
 
+> **Educational project — not investment advice.** Free and open source under the
+> [MIT License](LICENSE). Not affiliated with NEPSE, SEBON or CDSC. Outputs may be
+> wrong; use at your own risk. Read the [Disclaimer](DISCLAIMER.md) before using it.
+
 Crawls daily prices from public NEPSE mirrors, computes technical indicators,
 runs LLM-powered analysis, and tracks a real portfolio — including a two-step
 import of MeroShare CSV exports.
@@ -1051,6 +1055,10 @@ both benchmarks, and profile settings.
 
 ## License
 
-Source code is distributed under the [MIT License](LICENSE). Market-data rights,
-third-party service terms, and personal financial exports are separate from the
-source-code license. See [public deployment](docs/PUBLIC_RELEASE.md).
+Source code is distributed under the [MIT License](LICENSE): anyone may use, copy,
+modify and share it, including commercially, provided the copyright notice is kept.
+It comes with no warranty. Read the [Disclaimer](DISCLAIMER.md): this is an
+educational project, not investment advice, and operators of a deployment are
+responsible for market-data permissions, user privacy and AI-provider terms.
+Market-data rights, third-party service terms, and personal financial exports are
+separate from the source-code license. See [public deployment](docs/PUBLIC_RELEASE.md).
