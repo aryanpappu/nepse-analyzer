@@ -81,15 +81,12 @@ return 200; `/.env` must return 403. Then check
 
 ## Continuous deployment (recommended)
 
-Branches:
-
-| Branch | Purpose | What happens on push |
-|---|---|---|
-| `develop` (default) | everyday work; open pull requests here | CI runs |
-| `main` | production; changes arrive by pull request from `develop` | CI runs, then the server deploys it |
+One branch: **`develop`** is the default branch and production. Every push to it
+runs CI, and the server deploys the commit only after CI has passed. Larger
+changes can still go through a short-lived feature branch and a pull request.
 
 Deployment is **pull-based**. A systemd timer on the server runs
-`scripts/deploy-pull.sh` every few minutes. When `main` has moved, it waits until
+`scripts/deploy-pull.sh` every few minutes. When `develop` has moved, it waits until
 the GitHub Actions check **"CI passed"** succeeded for that exact commit, backs up
 the database, checks the commit out, runs `scripts/server-install.sh` (Composer,
 frontend build, migrations, SPA publish, Horizon restart) and requests
@@ -104,11 +101,11 @@ are stored in GitHub.
 One-time setup on the server (as root):
 
 ```bash
-# 1. Make the app directory a git checkout of main (keeps .env, vendor, storage).
+# 1. Make the app directory a git checkout of develop (keeps .env, vendor, storage).
 sudo -u siteuser git -C /home/your.domain/app init -q
 sudo -u siteuser git -C /home/your.domain/app remote add origin https://github.com/OWNER/REPO.git
-sudo -u siteuser git -C /home/your.domain/app fetch -q origin main
-sudo -u siteuser git -C /home/your.domain/app checkout -q -f -B deploy origin/main
+sudo -u siteuser git -C /home/your.domain/app fetch -q origin develop
+sudo -u siteuser git -C /home/your.domain/app checkout -q -f -B deploy origin/develop
 
 # 2. Settings for the deploy job.
 cat > /etc/default/stock-deploy <<'CONF'
@@ -122,7 +119,7 @@ CONF
 # 3. Service + timer.
 cat > /etc/systemd/system/stock-deploy.service <<'UNIT'
 [Unit]
-Description=Deploy main when CI has passed
+Description=Deploy develop when CI has passed
 After=network-online.target
 [Service]
 Type=oneshot
@@ -145,5 +142,5 @@ Watch deploys with `journalctl -u stock-deploy -f`. To retry a commit that was
 rolled back, fix forward with a new commit (or delete
 `/var/lib/stock-deploy/failed_sha`).
 
-Protect `main` on GitHub (Settings → Branches): require a pull request and the
-status check **CI passed**.
+Protect `develop` on GitHub (Settings → Rules → Rulesets): restrict deletions and
+block force pushes.

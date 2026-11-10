@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Continuous deployment by pull. Run on the server by a systemd timer (as root).
 #
-# Each run: fetch the production branch; if it moved, wait until the GitHub
+# Each run: fetch the deploy branch (develop); if it moved, wait until the GitHub
 # Actions check "CI passed" succeeded for that exact commit, back up the
 # database, check out the commit, run scripts/server-install.sh and verify the
 # site answers. If anything fails, the previous commit is restored and
@@ -12,7 +12,7 @@
 #   SITE_USER        CyberPanel site user that owns APP_DIR              required
 #   GITHUB_REPO      owner/name, e.g. someone/nepse-analyzer             required
 #   HEALTH_URL       URL that must return 200 after deploying            required
-#   DEPLOY_BRANCH    default main
+#   DEPLOY_BRANCH    default develop
 #   CHECK_NAME       required GitHub check, default "CI passed"
 #   STATE_DIR        default /var/lib/stock-deploy
 #   BACKUP_DIR       database dumps before each deploy, default $STATE_DIR/backups
@@ -24,7 +24,7 @@ set -euo pipefail
 : "${SITE_USER:?set SITE_USER}"
 : "${GITHUB_REPO:?set GITHUB_REPO}"
 : "${HEALTH_URL:?set HEALTH_URL}"
-DEPLOY_BRANCH="${DEPLOY_BRANCH:-main}"
+DEPLOY_BRANCH="${DEPLOY_BRANCH:-develop}"
 CHECK_NAME="${CHECK_NAME:-CI passed}"
 STATE_DIR="${STATE_DIR:-/var/lib/stock-deploy}"
 BACKUP_DIR="${BACKUP_DIR:-$STATE_DIR/backups}"

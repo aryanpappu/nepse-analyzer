@@ -75,3 +75,5 @@ frontend/playwright-report/
 *.backup
 *.orig
 
+backend/public/assets/
+backend/public/spa.html

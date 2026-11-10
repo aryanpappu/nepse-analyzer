@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [develop]
   pull_request:
   workflow_dispatch:
 
@@ -280,8 +280,8 @@ jobs:
           retention-days: 7
 
   # ---------------------------------------------------------------------------
-  # The single gate. Production deploys (scripts/deploy-pull.sh) and branch
-  # protection on `main` wait for this one check rather than a list of job
+  # The single gate. Production deploys (scripts/deploy-pull.sh) wait for this
+  # one check rather than a list of job
   # names that would silently stop matching when a job is renamed. The advisory
   # dependency audit is deliberately not a dependency.
   # ---------------------------------------------------------------------------
