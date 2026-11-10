@@ -22,7 +22,7 @@ class SiteInformationTest extends FeatureTestCase
             ->assertJsonPath('data.operator_name', 'Example Operator')
             ->assertJsonPath('data.contact_email', 'support@example.com')
             ->assertJsonPath('data.privacy_url', 'https://example.com/privacy')
-            ->assertJsonCount(5, 'data')
+            ->assertJsonCount(7, 'data')
             ->assertDontSee('not-public');
     }
 

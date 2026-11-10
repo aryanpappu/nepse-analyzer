@@ -2,10 +2,14 @@ import { useState } from 'react'
 import { Link, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { errorMessage } from '../lib/api'
 import { useAuth } from '../lib/auth'
+import { useSiteInformation } from '../lib/site'
 import { ErrorBox, Spinner } from '../components/ui'
 
 export function Login() {
   const { user, loading, login, register } = useAuth()
+  const site = useSiteInformation()
+  const registrationOpen = site.data?.registration_open === true
+  const requireLogin = site.data?.require_login === true
   const navigate = useNavigate()
   const location = useLocation()
   const state = location.state as { from?: string } | null
@@ -34,7 +38,7 @@ export function Login() {
     setBusy(true)
 
     try {
-      if (mode === 'login') {
+      if (mode === 'login' || !registrationOpen) {
         await login(email, password)
       } else {
         await register(name, email, password)
@@ -62,6 +66,7 @@ export function Login() {
         </div>
 
         <div className="card p-6">
+          {registrationOpen && (
           <div className="mb-5 flex gap-1 rounded-lg bg-slate-100 p-1">
             {(['login', 'register'] as const).map((option) => (
               <button
@@ -79,6 +84,10 @@ export function Login() {
               </button>
             ))}
           </div>
+          )}
+          {!registrationOpen && site.isSuccess && (
+            <p className="mb-4 text-sm text-slate-500">Accounts are by invitation. Ask the administrator for access.</p>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === 'register' && (
@@ -142,10 +151,15 @@ export function Login() {
           )}
         </div>
 
-        <p className="mt-4 text-center text-sm text-slate-500">
-          <Link to="/" className="font-medium underline">
-            Browse market data without signing in
-          </Link>
+        {!requireLogin && (
+          <p className="mt-4 text-center text-sm text-slate-500">
+            <Link to="/" className="font-medium underline">
+              Browse market data without signing in
+            </Link>
+          </p>
+        )}
+        <p className="mt-6 text-center text-xs text-slate-400">
+          Educational and research project — not investment advice. Not affiliated with NEPSE, SEBON or CDSC.
         </p>
       </div>
     </div>

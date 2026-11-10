@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\AccountDataController;
 use App\Http\Controllers\Api\AcquisitionChannelController;
+use App\Http\Controllers\Api\AdminUserController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CashController;
 use App\Http\Controllers\Api\CashPlacementController;
@@ -26,6 +27,7 @@ use App\Http\Controllers\Api\StockController;
 use App\Http\Controllers\Api\TransactionCostController;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsurePortfolioBelongsToUser;
+use App\Http\Middleware\RequireLoginWhenPrivate;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -38,9 +40,14 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+// Always public: the login page needs site information, monitoring needs health.
 Route::middleware('throttle:120,1')->group(function (): void {
     Route::get('/site-information', SiteInformationController::class);
     Route::get('/health', [MarketController::class, 'health']);
+});
+
+// Public market data — unless the operator runs a private, login-only instance.
+Route::middleware(['throttle:120,1', RequireLoginWhenPrivate::class])->group(function (): void {
     Route::get('/market/summary', [MarketController::class, 'summary']);
     Route::get('/sectors', [MarketController::class, 'sectors']);
 
@@ -129,6 +136,12 @@ Route::prefix('auth')->group(function (): void {
 */
 
 Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function (): void {
+
+    // Account administration: the only way to add users when registration is closed.
+    Route::middleware(EnsureAdmin::class)->prefix('admin')->group(function (): void {
+        Route::get('/users', [AdminUserController::class, 'index']);
+        Route::post('/users', [AdminUserController::class, 'store'])->middleware('throttle:20,1');
+    });
 
     /*
      * What is still missing before the app can say anything useful.

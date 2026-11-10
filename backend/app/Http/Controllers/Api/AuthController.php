@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\Account\UserAccountCreator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -20,31 +21,21 @@ use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
 {
-    public function register(Request $request): JsonResponse
+    public function register(Request $request, UserAccountCreator $accounts): JsonResponse
     {
+        if (! config('public_site.registration_open')) {
+            return response()->json([
+                'message' => 'Registration is closed. Ask an administrator to create an account for you.',
+            ], 403);
+        }
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', Password::min(8)],
         ]);
 
-        $user = DB::transaction(function () use ($validated): User {
-            $user = User::create([
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-                'password' => $validated['password'],
-                'role' => User::ROLE_USER,
-            ]);
-
-            // Every account gets a portfolio so the UI has somewhere to write to.
-            $user->portfolios()->create([
-                'name' => 'My Portfolio',
-                'currency' => 'NPR',
-                'is_default' => true,
-            ]);
-
-            return $user;
-        });
+        $user = $accounts->create($validated['name'], $validated['email'], $validated['password'], User::ROLE_USER);
 
         return response()->json([
             'data' => [

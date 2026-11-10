@@ -19,6 +19,8 @@ class SiteInformationController extends Controller
             'contact_email' => is_string($contact) && filter_var($contact, FILTER_VALIDATE_EMAIL) ? $contact : null,
             'privacy_url' => $this->httpsUrl(config('public_site.privacy_url')),
             'terms_url' => $this->httpsUrl(config('public_site.terms_url')),
+            'require_login' => (bool) config('public_site.require_login'),
+            'registration_open' => (bool) config('public_site.registration_open'),
         ]]);
     }
 

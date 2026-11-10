@@ -48,6 +48,8 @@ const NAV_GROUPS: { label: string; items: { to: string; label: string; end?: boo
   },
 ]
 
+const ADMIN_GROUP: (typeof NAV_GROUPS)[number] = { label: 'Admin', items: [{ to: '/admin/users', label: 'Users' }] }
+
 export function Layout() {
   const { user, loading: authLoading, logout } = useAuth()
   const navigate = useNavigate()
@@ -102,7 +104,7 @@ export function Layout() {
            * line of its own above Import and Settings.
            */}
           <nav aria-label="Main navigation" className="order-3 flex w-full flex-wrap items-start gap-x-5 gap-y-3">
-            {NAV_GROUPS.map((group) => (
+            {(user?.is_admin === true ? [...NAV_GROUPS, ADMIN_GROUP] : NAV_GROUPS).map((group) => (
               <div key={group.label} className="flex flex-col gap-1">
                 <span
                   aria-hidden

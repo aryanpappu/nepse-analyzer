@@ -1,21 +1,9 @@
-import { useQuery } from '@tanstack/react-query'
-import { api, errorMessage } from '../lib/api'
+import { errorMessage } from '../lib/api'
+import { useSiteInformation } from '../lib/site'
 import { Card, ErrorBox } from '../components/ui'
 
-interface SiteInformation {
-  name: string
-  operator_name: string | null
-  contact_email: string | null
-  privacy_url: string | null
-  terms_url: string | null
-}
-
 export function About() {
-  const site = useQuery({
-    queryKey: ['site-information'],
-    queryFn: async () => (await api.get<{ data: SiteInformation }>('/site-information')).data.data,
-    staleTime: 300_000,
-  })
+  const site = useSiteInformation()
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">

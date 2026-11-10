@@ -2,6 +2,8 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { Spinner } from './components/ui'
 import { useAuth } from './lib/auth'
+import { useSiteInformation } from './lib/site'
+import { AdminUsers } from './pages/AdminUsers'
 import { Dashboard } from './pages/Dashboard'
 import { StockList } from './pages/StockList'
 import { StockDetail } from './pages/StockDetail'
@@ -40,6 +42,38 @@ function RequireAuth({ children }: { children: ReactNode }) {
   return <>{children}</>
 }
 
+/**
+ * On a private instance (operator set SITE_REQUIRE_LOGIN) every page needs a
+ * signed-in user, so send visitors to the login screen instead of rendering a
+ * page whose API calls would all be refused.
+ */
+function SiteGate({ children }: { children: ReactNode }) {
+  const { user, loading } = useAuth()
+  const site = useSiteInformation()
+  const location = useLocation()
+
+  if (loading || site.isLoading) {
+    return <Spinner label="Loading…" />
+  }
+
+  if (site.data?.require_login === true && user === null) {
+    return <Navigate to="/login" state={{ from: location.pathname + location.search + location.hash }} replace />
+  }
+
+  return <>{children}</>
+}
+
+/** Gates routes that only administrators may open. */
+function RequireAdmin({ children }: { children: ReactNode }) {
+  const { user } = useAuth()
+
+  if (user?.is_admin !== true) {
+    return <Navigate to="/" replace />
+  }
+
+  return <>{children}</>
+}
+
 export function App() {
   return (
     <Routes>
@@ -47,7 +81,7 @@ export function App() {
       <Route path="/forgot-password" element={<PasswordRecovery />} />
       <Route path="/reset-password" element={<PasswordRecovery />} />
 
-      <Route element={<Layout />}>
+      <Route element={<SiteGate><Layout /></SiteGate>}>
         {/* Public market data */}
         <Route index element={<Dashboard />} />
         <Route path="about" element={<About />} />
@@ -97,6 +131,7 @@ export function App() {
         <Route path="attribution" element={<RequireAuth><Attribution /></RequireAuth>} />
         <Route path="calendar" element={<Calendar />} />
         <Route path="settings" element={<RequireAuth><Settings /></RequireAuth>} />
+        <Route path="admin/users" element={<RequireAuth><RequireAdmin><AdminUsers /></RequireAdmin></RequireAuth>} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
