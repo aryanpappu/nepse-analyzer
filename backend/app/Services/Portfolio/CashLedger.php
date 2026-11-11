@@ -40,6 +40,7 @@ final class CashLedger
         ?Carbon $date = null,
         ?string $transferGroupId = null,
         bool $allowOverdraft = false,
+        ?int $portfolioTransactionId = null,
     ): CashTransaction {
         if (! in_array($account, CashTransaction::accounts(), true)) {
             throw new RuntimeException("Unknown cash account [{$account}].");
@@ -51,7 +52,7 @@ final class CashLedger
             throw new RuntimeException('Cash transaction amount must be non-zero.');
         }
 
-        return DB::transaction(function () use ($portfolio, $account, $amount, $type, $reference, $notes, $date, $transferGroupId, $allowOverdraft): CashTransaction {
+        return DB::transaction(function () use ($portfolio, $account, $amount, $type, $reference, $notes, $date, $transferGroupId, $allowOverdraft, $portfolioTransactionId): CashTransaction {
             // Re-read under a lock: the balance we validate against must be the
             // one we write, or two concurrent withdrawals could both pass.
             $locked = Portfolio::whereKey($portfolio->id)->lockForUpdate()->firstOrFail();
@@ -87,17 +88,69 @@ final class CashLedger
             // Keep the caller's instance in step so the response is accurate.
             $portfolio->{$column} = $newBalance;
 
-            return CashTransaction::create([
+            $onDate = ($date ?? Carbon::today())->toDateString();
+
+            $row = CashTransaction::create([
                 'portfolio_id' => $locked->id,
+                'portfolio_transaction_id' => $portfolioTransactionId,
                 'type' => $type,
                 'account' => $account,
                 'amount' => $amount,
                 'balance_after' => $newBalance,
                 'reference' => $reference,
                 'notes' => $notes,
-                'transacted_on' => ($date ?? Carbon::today())->toDateString(),
+                'transacted_on' => $onDate,
                 'transfer_group_id' => $transferGroupId,
             ]);
+
+            /*
+             * A backdated row sits before movements already in the ledger, so
+             * the `balance_after` written above (the current balance plus this
+             * amount) is wrong for it and for every later row. Replay rather
+             * than patch. The historical-import path replays once at its end
+             * instead, because a replay mid-import can see a transient debit.
+             */
+            if (! $allowOverdraft && CashTransaction::where('portfolio_id', $locked->id)
+                ->where('account', $account)
+                ->notVoided()
+                ->where('transacted_on', '>', $onDate)
+                ->exists()) {
+                /*
+                 * The current balance passing is not enough: dated before a
+                 * deposit, the same debit would have overdrawn the account on
+                 * its own date. Refuse a movement that takes the running
+                 * balance lower than the ledger already went — a transient
+                 * debit an imported statement genuinely carried stays allowed.
+                 *
+                 * Only judged inside the period the ledger covers. A row dated
+                 * before the account's first entry predates what the ledger
+                 * knows — an opening balance entered today says nothing about
+                 * last year — so it cannot be shown to have overdrawn anything.
+                 */
+                $ledgerStart = CashTransaction::where('portfolio_id', $locked->id)
+                    ->where('account', $account)
+                    ->notVoided()
+                    ->whereKeyNot($row->id)
+                    ->min('transacted_on');
+                $covered = $ledgerStart !== null && $onDate >= Carbon::parse($ledgerStart)->toDateString();
+
+                $before = $covered ? $this->lowestBalance($locked, $account, exclude: (int) $row->id) : 0.0;
+                $after = $covered ? $this->lowestBalance($locked, $account) : 0.0;
+
+                if ($covered && $after < -0.005 && $after < $before - 0.005) {
+                    throw new RuntimeException(sprintf(
+                        'Insufficient %s balance on %s: the account would have been overdrawn by NPR %s at that date.',
+                        $account === CashTransaction::ACCOUNT_BANK ? 'bank' : 'cash',
+                        $onDate,
+                        number_format(abs($after), 2),
+                    ));
+                }
+
+                $this->recomputeAccount($locked, $account);
+                $row->refresh();
+            }
+
+            return $row;
         });
     }
 
@@ -193,6 +246,14 @@ final class CashLedger
 
         if ($transaction->isVoided()) {
             throw new RuntimeException('Cannot amend a voided transaction — it no longer counts toward the balance.');
+        }
+
+        if ($transaction->portfolio_transaction_id !== null
+            && array_intersect(['amount', 'account', 'transacted_on'], array_keys($changes)) !== []) {
+            throw new RuntimeException(
+                'This movement settles a recorded trade, so its amount, account and date follow the trade. '
+                .'Correct the trade instead, or void this settlement and record the cash by hand.',
+            );
         }
 
         if ($transaction->transfer_group_id !== null && array_key_exists('account', $changes)) {
@@ -303,6 +364,52 @@ final class CashLedger
     }
 
     /**
+     * Void several rows, then replay each account once.
+     *
+     * Voiding one at a time replays after each row, and an interim state can
+     * overdraw even when the finished one is valid — voiding a sale's credit
+     * before the buy debit it paid for. The rows' groups (transfer legs) are
+     * voided with them.
+     *
+     * @param  iterable<CashTransaction>  $transactions
+     */
+    public function voidMany(Portfolio $portfolio, iterable $transactions, ?string $reason = null): void
+    {
+        DB::transaction(function () use ($portfolio, $transactions, $reason): void {
+            $locked = Portfolio::whereKey($portfolio->id)->lockForUpdate()->firstOrFail();
+
+            /** @var array<string, true> $accountsTouched */
+            $accountsTouched = [];
+
+            foreach ($transactions as $transaction) {
+                $this->assertBelongsTo($portfolio, $transaction);
+
+                foreach ($this->lockedGroup($transaction) as $row) {
+                    if ($row->isVoided()) {
+                        continue;
+                    }
+
+                    $row->forceFill([
+                        'voided_at' => Carbon::now(),
+                        'void_reason' => $reason ?? 'Entered in error.',
+                    ])->save();
+
+                    $accountsTouched[$row->account] = true;
+                }
+            }
+
+            foreach (array_keys($accountsTouched) as $account) {
+                $this->recomputeAccount($locked, $account);
+            }
+
+            foreach (CashTransaction::accounts() as $account) {
+                $column = CashTransaction::balanceColumn($account);
+                $portfolio->{$column} = $locked->{$column};
+            }
+        });
+    }
+
+    /**
      * Pure function: replay an ordered, signed-amount ledger and return each
      * row's running balance plus the ending balance. No DB access — this is
      * the core the unit tests exercise directly.
@@ -343,6 +450,28 @@ final class CashLedger
         foreach (CashTransaction::accounts() as $account) {
             $this->recomputeAccount($portfolio, $account);
         }
+    }
+
+    /** The lowest running balance the account's ledger reaches, optionally without one row. */
+    private function lowestBalance(Portfolio $portfolio, string $account, ?int $exclude = null): float
+    {
+        $rows = CashTransaction::query()
+            ->where('portfolio_id', $portfolio->id)
+            ->where('account', $account)
+            ->notVoided()
+            ->when($exclude !== null, fn ($query) => $query->whereKeyNot($exclude))
+            ->orderBy('transacted_on')
+            ->orderBy('id')
+            ->get(['id', 'amount']);
+
+        $balances = self::replay(
+            $rows->map(static fn (CashTransaction $row): array => [
+                'id' => $row->id,
+                'amount' => (float) $row->amount,
+            ])->all(),
+        )['balances'];
+
+        return $balances === [] ? 0.0 : min(0.0, ...array_values($balances));
     }
 
     private function recomputeAccount(Portfolio $portfolio, string $account): void

@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { api } from './api'
 import { useAuth } from './auth'
+import { usePortfolioSelection } from './portfolioSelection'
 import type { OnboardingState, OnboardingStep } from './types'
 
 /**
@@ -13,10 +14,18 @@ import type { OnboardingState, OnboardingStep } from './types'
  */
 export function useOnboarding() {
   const { user } = useAuth()
+  // Keyed by the selected portfolio so the checklist describes the one on
+  // screen; invalidating ['onboarding'] still drops every variant.
+  const { activeId } = usePortfolioSelection()
 
   return useQuery({
-    queryKey: ['onboarding'],
-    queryFn: async () => (await api.get<{ data: OnboardingState }>('/onboarding')).data.data,
+    queryKey: ['onboarding', activeId],
+    queryFn: async () =>
+      (
+        await api.get<{ data: OnboardingState }>('/onboarding', {
+          params: activeId === null ? undefined : { portfolio_id: activeId },
+        })
+      ).data.data,
     enabled: user !== null,
     // Importing or classifying is a deliberate act elsewhere in the app, and
     // those mutations invalidate this key. A minute of staleness in between is

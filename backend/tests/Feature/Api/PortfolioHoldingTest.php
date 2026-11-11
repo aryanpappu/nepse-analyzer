@@ -4,15 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Api;
 
+use App\Models\CashTransaction;
 use App\Models\Portfolio;
 use App\Models\PortfolioHolding;
 use App\Models\PortfolioTransaction;
 use App\Models\Sector;
 use App\Models\Stock;
 use App\Models\User;
+use App\Services\Portfolio\CashLedger;
 use Illuminate\Support\Carbon;
 use Laravel\Sanctum\Sanctum;
 use PHPUnit\Framework\Attributes\Test;
+use RuntimeException;
 use Tests\FeatureTestCase;
 
 /**
@@ -366,39 +369,196 @@ final class PortfolioHoldingTest extends FeatureTestCase
     // ------------------------------------------------------------------
 
     #[Test]
-    public function it_adjusts_a_position_directly_for_an_opening_balance(): void
+    public function patching_a_holding_edits_notes_only(): void
     {
-        $holding = PortfolioHolding::factory()
-            ->for($this->portfolio)
-            ->for($this->stock)
-            ->position(100, 500)
-            ->create();
-
-        $response = $this->patchJson(
-            "/api/portfolios/{$this->portfolio->id}/holdings/{$holding->id}",
-            ['quantity' => 250, 'average_cost' => 420, 'notes' => 'Opening balance correction.'],
-        )
-            ->assertOk()
-            ->assertJsonPath('message', 'Holding updated.');
-
-        $this->assertJsonNumber($response, 'data.holdings.0.quantity', 250);
-        $this->assertJsonNumber($response, 'data.holdings.0.average_cost', 420);
-    }
-
-    #[Test]
-    public function it_rejects_a_negative_position_adjustment(): void
-    {
-        $holding = PortfolioHolding::factory()
-            ->for($this->portfolio)
-            ->for($this->stock)
-            ->create();
+        $this->buy(100, 400);
+        $holding = PortfolioHolding::where('portfolio_id', $this->portfolio->id)->sole();
 
         $this->patchJson(
             "/api/portfolios/{$this->portfolio->id}/holdings/{$holding->id}",
-            ['quantity' => -5, 'average_cost' => -1],
-        )
-            ->assertStatus(422)
-            ->assertJsonValidationErrors(['quantity', 'average_cost']);
+            ['notes' => 'Long-term core.'],
+        )->assertOk()->assertJsonPath('message', 'Holding updated.');
+
+        $holding->refresh();
+        $this->assertSame('Long-term core.', $holding->notes);
+        $this->assertSame(100.0, (float) $holding->quantity);
+    }
+
+    #[Test]
+    public function it_refuses_to_overwrite_a_position_outside_the_ledger(): void
+    {
+        $this->buy(100, 400);
+        $holding = PortfolioHolding::where('portfolio_id', $this->portfolio->id)->sole();
+
+        // A patched quantity was silently undone by the next rebuild, so it is
+        // refused rather than accepted and later lost.
+        $this->patchJson(
+            "/api/portfolios/{$this->portfolio->id}/holdings/{$holding->id}",
+            ['quantity' => 250, 'average_cost' => 420],
+        )->assertStatus(422)->assertJsonValidationErrors(['quantity']);
+
+        $this->assertSame(100.0, (float) $holding->refresh()->quantity);
+    }
+
+    #[Test]
+    public function a_backdated_buy_reprices_a_later_sell_exactly_as_rebuild_would(): void
+    {
+        $this->trade('buy', 100, 400, 30);
+        $this->trade('sell', 100, 600, 10);
+
+        // Recorded after the sell, dated before it: it is part of the cost of
+        // the units sold, not a fresh position opened afterwards.
+        $this->trade('buy', 100, 200, 20);
+
+        $holding = PortfolioHolding::where('portfolio_id', $this->portfolio->id)->sole();
+        $recorded = [(float) $holding->quantity, (float) $holding->average_cost, (float) $holding->realized_gain];
+
+        $this->assertSame(100.0, $recorded[0]);
+        $this->assertSame(300.0, $recorded[1]);
+        $this->assertSame(30000.0, $recorded[2]);
+
+        $sell = PortfolioTransaction::where('type', 'sell')->sole();
+        $this->assertSame(30000.0, (float) $sell->realized_gain);
+
+        $this->postJson("/api/portfolios/{$this->portfolio->id}/rebuild")->assertOk();
+        $holding->refresh();
+
+        $this->assertSame($recorded, [(float) $holding->quantity, (float) $holding->average_cost, (float) $holding->realized_gain]);
+    }
+
+    #[Test]
+    public function a_sell_dated_before_the_units_were_held_is_refused(): void
+    {
+        $this->trade('buy', 100, 400, 10);
+
+        $this->postJson("/api/portfolios/{$this->portfolio->id}/transactions", [
+            'symbol' => 'NABIL', 'type' => 'sell', 'quantity' => 50, 'price' => 500,
+            'transacted_on' => Carbon::today()->subDays(20)->toDateString(),
+        ])->assertStatus(422)->assertJsonPath('message', fn (string $m): bool => str_contains($m, 'held 0'));
+
+        $this->assertDatabaseCount('portfolio_transactions', 1);
+        $this->assertSame(100.0, (float) PortfolioHolding::where('portfolio_id', $this->portfolio->id)->sole()->quantity);
+    }
+
+    #[Test]
+    public function a_settled_trade_is_dated_and_linked_and_removing_it_voids_the_cash(): void
+    {
+        app(CashLedger::class)->deposit($this->portfolio, 'bank', 100000, null, null, Carbon::today()->subDays(40));
+
+        $this->postJson("/api/portfolios/{$this->portfolio->id}/transactions", [
+            'symbol' => 'NABIL', 'type' => 'buy', 'quantity' => 100, 'price' => 400,
+            'transacted_on' => Carbon::today()->subDays(30)->toDateString(),
+            'settle_cash' => true, 'cash_account' => 'bank',
+        ])->assertCreated();
+
+        $trade = PortfolioTransaction::sole();
+        $cash = CashTransaction::where('type', 'trade_debit')->sole();
+
+        $this->assertSame($trade->id, $cash->portfolio_transaction_id);
+        $this->assertSame(Carbon::today()->subDays(30)->toDateString(), Carbon::parse($cash->transacted_on)->toDateString());
+        $this->assertSame(60000.0, (float) $this->portfolio->fresh()->bank_balance);
+
+        // The settlement follows the trade; editing it by hand is refused.
+        try {
+            app(CashLedger::class)->amend($this->portfolio, $cash, ['amount' => 1]);
+            $this->fail('Amending a trade settlement should be refused.');
+        } catch (RuntimeException $e) {
+            $this->assertStringContainsString('settles a recorded trade', $e->getMessage());
+        }
+
+        $holding = PortfolioHolding::where('portfolio_id', $this->portfolio->id)->sole();
+        $this->deleteJson("/api/portfolios/{$this->portfolio->id}/holdings/{$holding->id}")->assertOk();
+
+        $this->assertNotNull($cash->fresh()->voided_at);
+        $this->assertSame(100000.0, (float) $this->portfolio->fresh()->bank_balance);
+    }
+
+    #[Test]
+    public function a_backdated_settlement_cannot_overdraw_the_account_on_its_own_date(): void
+    {
+        $ledger = app(CashLedger::class);
+        $ledger->deposit($this->portfolio, 'bank', 50000, null, null, Carbon::today()->subDays(30));
+        $ledger->deposit($this->portfolio, 'bank', 50000, null, null, Carbon::today()->subDays(10));
+
+        // Today's balance covers it, but on the trade date only the first
+        // deposit had arrived.
+        $this->postJson("/api/portfolios/{$this->portfolio->id}/transactions", [
+            'symbol' => 'NABIL', 'type' => 'buy', 'quantity' => 100, 'price' => 800,
+            'transacted_on' => Carbon::today()->subDays(20)->toDateString(),
+            'settle_cash' => true, 'cash_account' => 'bank',
+        ])->assertStatus(422)->assertJsonPath('message', fn (string $m): bool => str_contains($m, 'overdrawn'));
+
+        $this->assertDatabaseCount('portfolio_transactions', 0);
+        $this->assertSame(100000.0, (float) $this->portfolio->fresh()->bank_balance);
+    }
+
+    #[Test]
+    public function a_settlement_dated_before_the_ledger_begins_is_not_judged_against_it(): void
+    {
+        // An opening balance entered today says nothing about last month.
+        app(CashLedger::class)->deposit($this->portfolio, 'bank', 100000);
+
+        $this->postJson("/api/portfolios/{$this->portfolio->id}/transactions", [
+            'symbol' => 'NABIL', 'type' => 'buy', 'quantity' => 100, 'price' => 800,
+            'transacted_on' => Carbon::today()->subDays(20)->toDateString(),
+            'settle_cash' => true, 'cash_account' => 'bank',
+        ])->assertCreated();
+
+        $this->assertSame(20000.0, (float) $this->portfolio->fresh()->bank_balance);
+    }
+
+    #[Test]
+    public function an_imported_oversell_does_not_block_later_trades_on_the_scrip(): void
+    {
+        // An imported sell of a parcel the ledger never bought; rebuild clamps it.
+        PortfolioTransaction::factory()->for($this->portfolio)->for($this->stock)
+            ->create(['type' => 'sell', 'quantity' => 50, 'price' => 500, 'transacted_on' => Carbon::today()->subDays(30)]);
+
+        $this->trade('buy', 100, 400, 5);
+
+        $this->assertSame(100.0, (float) PortfolioHolding::where('portfolio_id', $this->portfolio->id)->sole()->quantity);
+    }
+
+    #[Test]
+    public function removing_a_holding_voids_all_its_settlements_together(): void
+    {
+        app(CashLedger::class)->deposit($this->portfolio, 'bank', 50000, null, null, Carbon::today()->subDays(40));
+
+        $settle = fn (string $type, float $qty, float $price, int $daysAgo) => $this->postJson(
+            "/api/portfolios/{$this->portfolio->id}/transactions",
+            [
+                'symbol' => 'NABIL', 'type' => $type, 'quantity' => $qty, 'price' => $price,
+                'transacted_on' => Carbon::today()->subDays($daysAgo)->toDateString(),
+                'settle_cash' => true, 'cash_account' => 'bank',
+            ],
+        )->assertCreated();
+
+        $settle('buy', 100, 400, 30);   // 50k -> 10k
+        $settle('sell', 100, 600, 20);  // 10k -> 70k
+        $settle('buy', 100, 650, 10);   // 70k -> 5k, paid from the sale
+
+        // One at a time, voiding the sale's credit first would overdraw the
+        // account in between; together the result is simply the deposit.
+        $holding = PortfolioHolding::where('portfolio_id', $this->portfolio->id)->sole();
+        $this->deleteJson("/api/portfolios/{$this->portfolio->id}/holdings/{$holding->id}")->assertOk();
+
+        $this->assertSame(50000.0, (float) $this->portfolio->fresh()->bank_balance);
+        $this->assertSame(3, CashTransaction::whereNotNull('voided_at')->count());
+    }
+
+    #[Test]
+    public function a_lump_sum_dividend_settles_its_full_amount(): void
+    {
+        $this->buy(100, 400);
+
+        $this->postJson("/api/portfolios/{$this->portfolio->id}/transactions", [
+            'symbol' => 'NABIL', 'type' => 'dividend', 'quantity' => 1500, 'price' => 0,
+            'transacted_on' => Carbon::today()->toDateString(),
+            'settle_cash' => true, 'cash_account' => 'bank',
+        ])->assertCreated();
+
+        $this->assertSame(1500.0, (float) CashTransaction::where('type', 'trade_credit')->sole()->amount);
+        $this->assertSame(1500.0, (float) PortfolioHolding::where('portfolio_id', $this->portfolio->id)->sole()->realized_gain);
     }
 
     #[Test]
@@ -497,6 +657,17 @@ final class PortfolioHoldingTest extends FeatureTestCase
     // ------------------------------------------------------------------
     // Helpers
     // ------------------------------------------------------------------
+
+    private function trade(string $type, float $quantity, float $price, int $daysAgo): void
+    {
+        $this->postJson("/api/portfolios/{$this->portfolio->id}/transactions", [
+            'symbol' => 'NABIL',
+            'type' => $type,
+            'quantity' => $quantity,
+            'price' => $price,
+            'transacted_on' => Carbon::today()->subDays($daysAgo)->toDateString(),
+        ])->assertCreated();
+    }
 
     private function buy(float $quantity, float $price): void
     {

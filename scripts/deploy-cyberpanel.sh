@@ -2,7 +2,7 @@
 # Deploy to a CyberPanel (OpenLiteSpeed + lsphp) host over SSH, without Docker.
 #
 # Manual deploy: builds the React app locally, syncs the working tree, then runs
-# scripts/server-install.sh on the server. For automatic deploys from the main
+# scripts/server-install.sh on the server. For automatic deploys from the develop
 # branch, see scripts/deploy-pull.sh. Do not mix the two on one server: this
 # script overwrites the checkout that the pull deploy manages with git.
 #

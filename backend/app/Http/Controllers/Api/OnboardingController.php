@@ -30,9 +30,22 @@ class OnboardingController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
+        /*
+         * The checklist describes the portfolio the user is looking at. Pages
+         * pass the one selected in the app; without it, the default — the same
+         * one `/portfolios` lists first — so the checklist and the money pages
+         * never answer for two different portfolios.
+         */
+        $requested = $request->integer('portfolio_id') ?: null;
         $portfolio = $user === null
             ? null
-            : Portfolio::where('user_id', $user->id)->orderBy('id')->first();
+            : Portfolio::where('user_id', $user->id)
+                ->when($requested !== null, fn ($query) => $query->whereKey($requested))
+                ->orderByDesc('is_default')
+                ->orderBy('name')
+                ->orderBy('id')
+                ->first()
+                ?? Portfolio::where('user_id', $user->id)->orderByDesc('is_default')->orderBy('name')->orderBy('id')->first();
 
         $steps = [
             $this->portfolioStep($portfolio),

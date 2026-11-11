@@ -8,6 +8,7 @@ import { Banner, Card, EmptyState, ErrorBox, Npr, Spinner } from '../components/
 import { CreateFirstPortfolio } from '../components/CreateFirstPortfolio'
 import { Explain } from '../components/Explain'
 import type { CashImport, CashImportRow, Portfolio } from '../lib/types'
+import { usePortfolioSelection } from '../lib/portfolioSelection'
 
 /**
  * Upload a broker statement.
@@ -45,7 +46,15 @@ export function CashImportPage() {
     queryFn: async () => (await api.get<{ data: Portfolio[] }>('/portfolios')).data.data,
   })
 
-  const portfolioId = portfolios.data?.[0]?.id ?? null
+  const { activeId: portfolioId, active: activePortfolio } = usePortfolioSelection()
+
+  // A staged import belongs to the portfolio it was uploaded into. Switching
+  // portfolio part-way drops it rather than committing it somewhere else.
+  const [stagedFor, setStagedFor] = useState(portfolioId)
+  if (stagedFor !== portfolioId) {
+    setStagedFor(portfolioId)
+    setImportId(null)
+  }
 
   const current = useQuery({
     queryKey: ['cash-import', portfolioId, importId],
@@ -136,6 +145,11 @@ export function CashImportPage() {
           exports on the Import screen. What it does give you is the one thing those cannot: how
           much you actually put in, and when.
         </p>
+        {activePortfolio !== null && (
+          <p className="mt-1 text-sm text-slate-700">
+            Importing into <strong>{activePortfolio.name}</strong>
+          </p>
+        )}
       </div>
 
       {notice !== null && <Banner tone="info">{notice}</Banner>}

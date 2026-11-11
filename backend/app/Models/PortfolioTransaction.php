@@ -91,8 +91,23 @@ class PortfolioTransaction extends Model
         return match ($this->type) {
             TransactionType::Buy, TransactionType::Rights => -round($this->grossAmount() + $this->fees(), 2),
             TransactionType::Sell => round($this->grossAmount() - $this->fees(), 2),
-            TransactionType::Dividend => round($this->grossAmount() - $this->fees(), 2),
+            TransactionType::Dividend => $this->dividendCash(),
             TransactionType::Bonus => 0.0,
         };
+    }
+
+    /**
+     * Cash a dividend row paid, net of fees and withholding.
+     *
+     * Dividends are usually entered as a lump sum in `quantity` with a zero
+     * price; read as `quantity × price` that is a dividend of nothing. Both the
+     * position replay and the cash settlement read this one method so they
+     * cannot disagree about what a dividend was worth.
+     */
+    public function dividendCash(): float
+    {
+        $gross = abs((float) $this->price) < 1e-9 ? (float) $this->quantity : $this->grossAmount();
+
+        return round($gross - $this->fees(), 2);
     }
 }

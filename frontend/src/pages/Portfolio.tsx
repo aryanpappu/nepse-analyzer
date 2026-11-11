@@ -46,6 +46,7 @@ import type {
   PortfolioSummary,
   RecommendationRun,
 } from '../lib/types'
+import { usePortfolioSelection } from '../lib/portfolioSelection'
 
 // Distinct enough to tell apart, and stable per slice index.
 const PIE_COLORS = [
@@ -63,7 +64,7 @@ export function PortfolioPage() {
   const queryClient = useQueryClient()
   const { profile, meta: profileMeta } = useProfile()
   const profileLabel = profileMeta?.label ?? profile.replace('_', ' ')
-  const [selectedId, setSelectedId] = useState<number | null>(null)
+  const { activeId, setActiveId } = usePortfolioSelection()
   const [notice, setNotice] = useState<string | null>(null)
   const [showTradeForm, setShowTradeForm] = useState(false)
   const [showCashForm, setShowCashForm] = useState(false)
@@ -73,7 +74,6 @@ export function PortfolioPage() {
     queryFn: async () => (await api.get<{ data: Portfolio[] }>('/portfolios')).data.data,
   })
 
-  const activeId = selectedId ?? portfolios.data?.[0]?.id ?? null
   // Whether anything has ever been recorded here, from the shared
   // getting-started query rather than a second round trip.
   const hasHoldings = useStepDone('holdings')
@@ -139,7 +139,7 @@ export function PortfolioPage() {
         hint="A portfolio holds your positions, trades and cash. Make one here, then import your MeroShare exports to fill it."
         action={
           <div className="mt-4 w-full">
-            <CreateFirstPortfolio onCreated={(portfolio) => setSelectedId(portfolio.id)} />
+            <CreateFirstPortfolio onCreated={(portfolio) => setActiveId(portfolio.id)} />
           </div>
         }
       />
@@ -166,7 +166,7 @@ export function PortfolioPage() {
             <select
               className="input w-auto"
               value={activeId ?? ''}
-              onChange={(event) => setSelectedId(Number(event.target.value))}
+              onChange={(event) => setActiveId(Number(event.target.value))}
             >
               {(portfolios.data ?? []).map((portfolio) => (
                 <option key={portfolio.id} value={portfolio.id}>

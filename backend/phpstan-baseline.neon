@@ -1597,42 +1597,6 @@ parameters:
 			path: app/Services/Portfolio/CashPlacementService.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$price\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Portfolio/HoldingCalculator.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$quantity\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Portfolio/HoldingCalculator.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$stock_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Portfolio/HoldingCalculator.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$transacted_on\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Portfolio/HoldingCalculator.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$type\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Services/Portfolio/HoldingCalculator.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:fees\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Services/Portfolio/HoldingCalculator.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$stock\.$#'
 			identifier: property.notFound
 			count: 1

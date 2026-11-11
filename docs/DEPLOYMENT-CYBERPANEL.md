@@ -66,11 +66,18 @@ PHP_INI_EXTRA=/home/your.domain/.php-cli scripts/deploy-cyberpanel.sh
 
 ## Closing registration
 
-There is no registration toggle in the application. To run a private instance,
-deny the endpoint in the vhost rewrite rules:
+Set these in `backend/.env` for a private, invite-only instance:
+
+```dotenv
+SITE_REQUIRE_LOGIN=true   # market pages need a signed-in user too
+REGISTRATION_OPEN=false   # /api/auth/register returns 403
+```
+
+Admins then create accounts under **Admin → Users**. Denying the endpoint in the
+vhost as well is optional defence in depth:
 
 ```apache
-RewriteRule ^/?api/register$ - [F,L]
+RewriteRule ^/?api/(auth/)?register$ - [F,L]
 ```
 
 ## Checks after deploying

@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { App } from './App'
 import { AuthProvider } from './lib/auth'
 import { ProfileProvider } from './lib/profile'
+import { PortfolioSelectionProvider } from './lib/portfolioSelection'
 import './index.css'
 
 const queryClient = new QueryClient({
@@ -36,7 +37,9 @@ ReactDOM.createRoot(root).render(
       <BrowserRouter>
         <AuthProvider>
           <ProfileProvider>
-            <App />
+            <PortfolioSelectionProvider>
+              <App />
+            </PortfolioSelectionProvider>
           </ProfileProvider>
         </AuthProvider>
       </BrowserRouter>

@@ -91,6 +91,21 @@ final class OnboardingTest extends FeatureTestCase
     }
 
     #[Test]
+    public function it_describes_the_selected_portfolio_and_never_someone_elses(): void
+    {
+        Portfolio::factory()->forUser($this->user)->default()->create(['name' => 'Main']);
+        $second = Portfolio::factory()->forUser($this->user)->create(['name' => 'Side']);
+        $foreign = Portfolio::factory()->forUser(User::factory()->create())->create(['name' => 'Theirs']);
+
+        $steps = $this->getJson("/api/onboarding?portfolio_id={$second->id}")->assertOk()->json('data.steps');
+        $this->assertSame('Side', $this->step($steps, 'portfolio')['detail']);
+
+        // Another account's id is ignored, not honoured: back to the default.
+        $steps = $this->getJson("/api/onboarding?portfolio_id={$foreign->id}")->assertOk()->json('data.steps');
+        $this->assertSame('Main', $this->step($steps, 'portfolio')['detail']);
+    }
+
+    #[Test]
     public function classification_is_outstanding_only_when_there_is_something_to_classify(): void
     {
         $portfolio = Portfolio::factory()->forUser($this->user)->default()->create();

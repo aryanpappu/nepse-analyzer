@@ -14,6 +14,7 @@ import type {
   PerformanceReport,
   Portfolio,
 } from '../lib/types'
+import { usePortfolioSelection } from '../lib/portfolioSelection'
 
 const BASES: { value: PerformanceBasis; label: string; hint: string }[] = [
   {
@@ -33,7 +34,7 @@ const BASES: { value: PerformanceBasis; label: string; hint: string }[] = [
  * unrealised column is blank for them rather than zero.
  */
 export function Performance() {
-  const [selectedId, setSelectedId] = useState<number | null>(null)
+  const { activeId, setActiveId } = usePortfolioSelection()
   const [basis, setBasis] = useState<PerformanceBasis>('fiscal')
   // The benchmark is only meaningful at a rate you could actually get, and that
   // differs by bank — so it is an input, not a constant.
@@ -44,7 +45,6 @@ export function Performance() {
     queryFn: async () => (await api.get<{ data: Portfolio[] }>('/portfolios')).data.data,
   })
 
-  const activeId = selectedId ?? portfolios.data?.[0]?.id ?? null
 
   const report = useQuery({
     queryKey: ['performance', activeId, basis, fdRate],
@@ -121,7 +121,7 @@ export function Performance() {
             <select
               className="input"
               value={activeId ?? ''}
-              onChange={(event) => setSelectedId(Number(event.target.value))}
+              onChange={(event) => setActiveId(Number(event.target.value))}
             >
               {(portfolios.data ?? []).map((portfolio) => (
                 <option key={portfolio.id} value={portfolio.id}>

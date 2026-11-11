@@ -89,8 +89,7 @@ final class PortfolioAuthorizationTest extends FeatureTestCase
                 'transacted_on' => $today,
             ]],
             'update holding' => ['patchJson', '/api/portfolios/{portfolio}/holdings/{holding}', [
-                'quantity' => 1,
-                'average_cost' => 1,
+                'notes' => 'changed',
             ]],
             'delete holding' => ['deleteJson', '/api/portfolios/{portfolio}/holdings/{holding}', []],
             'rebuild positions' => ['postJson', '/api/portfolios/{portfolio}/rebuild', []],
@@ -232,7 +231,7 @@ final class PortfolioAuthorizationTest extends FeatureTestCase
 
         $base = "/api/portfolios/{$this->otherPortfolio->id}/holdings/{$this->holding->id}";
 
-        $this->patchJson($base, ['quantity' => 0, 'average_cost' => 0])
+        $this->patchJson($base, ['notes' => 'changed'])
             ->assertNotFound()
             // bootstrap/app.php maps every api/* NotFoundHttpException to a
             // flat "Not found.", so the controllers' own 404 messages never

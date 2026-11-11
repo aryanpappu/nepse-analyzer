@@ -14,6 +14,7 @@ import {
 } from '../components/ui'
 import { CreateFirstPortfolio } from '../components/CreateFirstPortfolio'
 import type { ImportRow, ImportRowStatus, Portfolio, PortfolioImport } from '../lib/types'
+import { usePortfolioSelection } from '../lib/portfolioSelection'
 
 const STATUS_LABEL: Record<ImportRowStatus, { label: string; tone: string; hint: string }> = {
   ready: {
@@ -60,7 +61,15 @@ export function ImportWizard() {
     queryFn: async () => (await api.get<{ data: Portfolio[] }>('/portfolios')).data.data,
   })
 
-  const portfolioId = portfolios.data?.[0]?.id ?? null
+  const { activeId: portfolioId, active: activePortfolio } = usePortfolioSelection()
+
+  // A staged import belongs to the portfolio it was uploaded into. Switching
+  // portfolio part-way drops it rather than committing it somewhere else.
+  const [stagedFor, setStagedFor] = useState(portfolioId)
+  if (stagedFor !== portfolioId) {
+    setStagedFor(portfolioId)
+    setImportId(null)
+  }
 
   const current = useQuery({
     queryKey: ['import', portfolioId, importId],
@@ -166,6 +175,11 @@ export function ImportWizard() {
           Upload your two MeroShare exports. The portfolio file says what you hold; the WACC file
           says what you paid.
         </p>
+        {activePortfolio !== null && (
+          <p className="mt-1 text-sm text-slate-700">
+            Importing into <strong>{activePortfolio.name}</strong>
+          </p>
+        )}
       </div>
 
       <Stepper step={step} />
@@ -345,7 +359,7 @@ export function ImportWizard() {
                 onClick={() => commit.mutate()}
                 disabled={commit.isPending || data.summary.included === 0}
               >
-                {commit.isPending ? 'Importing…' : `Import ${data.summary.included} positions`}
+                {commit.isPending ? 'Importing…' : `Import ${data.summary.included} positions${activePortfolio !== null ? ` into ${activePortfolio.name}` : ''}`}
               </button>
             </div>
           </Card>

@@ -19,6 +19,7 @@ class CashTransaction extends Model
 
     protected $fillable = [
         'portfolio_id',
+        'portfolio_transaction_id',
         'type',
         'account',
         'amount',

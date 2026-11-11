@@ -8,6 +8,7 @@ use App\Enums\TransactionType;
 use App\Http\Controllers\Concerns\AuthorizesPortfolioAccess;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTransactionRequest;
+use App\Models\CashTransaction;
 use App\Models\Portfolio;
 use App\Models\PortfolioHolding;
 use App\Models\Stock;
@@ -16,6 +17,7 @@ use App\Services\Portfolio\HoldingCalculator;
 use App\Services\Portfolio\PortfolioValuationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -68,6 +70,11 @@ class HoldingController extends Controller
                             $impact < 0 ? 'trade_debit' : 'trade_credit',
                             null,
                             sprintf('%s %s %s', ucfirst($type->value), $validated['quantity'], $stock->symbol),
+                            // Settled on the trade's own date and linked to it, so
+                            // a backdated trade lands in the right place in the
+                            // cash history and removing the trade removes its cash.
+                            Carbon::parse($transaction->transacted_on),
+                            portfolioTransactionId: (int) $transaction->id,
                         );
                     }
                 }
@@ -101,26 +108,33 @@ class HoldingController extends Controller
     }
 
     /**
-     * Adjust a position directly, without a trade — for correcting an opening
-     * balance rather than recording a transaction.
+     * Edit a holding's notes.
+     *
+     * Quantity and average cost are not editable here: a position is a
+     * function of the transaction ledger, and patching it directly produced a
+     * number that the next rebuild silently threw away. A correction is a
+     * transaction (or deleting a wrong one), never an overwrite.
      */
     public function update(Request $request, Portfolio $portfolio, PortfolioHolding $holding): JsonResponse
     {
         $this->authorizeOwner($request, $portfolio);
         $this->authorizeHolding($portfolio, $holding);
 
+        if ($request->hasAny(['quantity', 'average_cost'])) {
+            return response()->json([
+                'message' => 'Quantity and average cost come from the transaction ledger. '
+                    .'Record a buy, sell or bonus to change them, then rebuild if needed.',
+                'errors' => [
+                    'quantity' => ['Record a transaction instead of editing the position.'],
+                ],
+            ], 422);
+        }
+
         $validated = $request->validate([
-            'quantity' => ['required', 'numeric', 'gte:0', 'max:999999999'],
-            'average_cost' => ['required', 'numeric', 'gte:0', 'max:1000000'],
-            'notes' => ['nullable', 'string', 'max:1000'],
+            'notes' => ['present', 'nullable', 'string', 'max:1000'],
         ]);
 
-        $holding->update($validated);
-
-        Cache::forget("portfolio:summary:{$portfolio->id}");
-        // The benchmark is cached for far longer than the summary, so it needs
-        // an explicit bump or a trade would not show up in it for half an hour.
-        PerformanceController::invalidateBenchmark($portfolio);
+        $holding->update(['notes' => $validated['notes']]);
 
         return response()->json([
             'message' => 'Holding updated.',
@@ -138,12 +152,34 @@ class HoldingController extends Controller
 
         $symbol = $holding->stock->symbol;
 
-        DB::transaction(function () use ($portfolio, $holding): void {
-            // Remove the ledger entries too, otherwise a later rebuild would
-            // resurrect the position.
-            $portfolio->transactions()->where('stock_id', $holding->stock_id)->delete();
-            $holding->delete();
-        });
+        try {
+            DB::transaction(function () use ($portfolio, $holding, $symbol): void {
+                $transactionIds = $portfolio->transactions()
+                    ->where('stock_id', $holding->stock_id)
+                    ->pluck('id');
+
+                // Void the cash each trade settled, so the balance stops
+                // holding money for trades that no longer exist. Voided rather
+                // than deleted, so the history still explains the balance.
+                $this->cash->voidMany(
+                    $portfolio,
+                    CashTransaction::where('portfolio_id', $portfolio->id)
+                        ->whereIn('portfolio_transaction_id', $transactionIds)
+                        ->notVoided()
+                        ->get(),
+                    "{$symbol} removed from the portfolio.",
+                );
+
+                // Remove the ledger entries too, otherwise a later rebuild would
+                // resurrect the position.
+                $portfolio->transactions()->whereIn('id', $transactionIds)->delete();
+                $holding->delete();
+            });
+        } catch (RuntimeException $e) {
+            // Reversing a sale's proceeds can overdraw the account once that
+            // money has been spent; that is the user's to resolve, not a 500.
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
 
         Cache::forget("portfolio:summary:{$portfolio->id}");
         // The benchmark is cached for far longer than the summary, so it needs

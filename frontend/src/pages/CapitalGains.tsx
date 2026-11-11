@@ -8,6 +8,7 @@ import { SetupNeeded } from '../components/GettingStarted'
 import { useStepDone } from '../lib/onboarding'
 import { Explain } from '../components/Explain'
 import type { CapitalGainsDisposal, CapitalGainsReport, Portfolio } from '../lib/types'
+import { usePortfolioSelection } from '../lib/portfolioSelection'
 
 const BASES = [
   { value: 'fiscal', label: 'Nepali fiscal year', hint: 'Shrawan 1 – Ashad end, how gains are reported' },
@@ -30,7 +31,7 @@ export function CapitalGains() {
     queryFn: async () => (await api.get<{ data: Portfolio[] }>('/portfolios')).data.data,
   })
 
-  const activeId = portfolios.data?.[0]?.id ?? null
+  const { activeId } = usePortfolioSelection()
   // Distinguishes an empty portfolio from a populated one with nothing to
   // show here; shares the getting-started query rather than asking again.
   const hasHoldings = useStepDone('holdings')

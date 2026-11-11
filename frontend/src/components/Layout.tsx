@@ -7,6 +7,7 @@ import { api } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { shortDate } from '../lib/format'
 import { ProfileSwitcher } from '../lib/profile'
+import { PortfolioSwitcher } from '../lib/portfolioSelection'
 import type { HealthStatus, HealthVerdict } from '../lib/types'
 
 /*
@@ -139,6 +140,7 @@ export function Layout() {
           </nav>
 
           <div className="ml-auto flex items-center gap-3 text-sm">
+            {user !== null && <PortfolioSwitcher />}
             <ProfileSwitcher />
 
             {priceDate !== null && (

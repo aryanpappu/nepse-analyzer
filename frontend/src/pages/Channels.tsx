@@ -4,6 +4,7 @@ import { AcquisitionChannelCard } from '../components/AcquisitionChannelCard'
 import { ErrorBox, Spinner } from '../components/ui'
 import { SetupNeeded } from '../components/GettingStarted'
 import type { Portfolio } from '../lib/types'
+import { usePortfolioSelection } from '../lib/portfolioSelection'
 
 /**
  * Where a parcel came from, and what that does to the profit figures.
@@ -13,6 +14,7 @@ import type { Portfolio } from '../lib/types'
  * something glanced at alongside holdings.
  */
 export function Channels() {
+  const { active: selected } = usePortfolioSelection()
   const portfolios = useQuery({
     queryKey: ['portfolios'],
     queryFn: async () => (await api.get<{ data: Portfolio[] }>('/portfolios')).data.data,
@@ -24,7 +26,7 @@ export function Channels() {
     return <ErrorBox message={errorMessage(portfolios.error)} onRetry={() => portfolios.refetch()} />
   }
 
-  const active = portfolios.data?.[0]
+  const active = selected ?? undefined
 
   if (active === undefined) {
     return (

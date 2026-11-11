@@ -505,7 +505,7 @@ DELETE /api/portfolios/{id}
 
 GET    /api/portfolios/{id}/holdings
 POST   /api/portfolios/{id}/transactions       buy/sell/bonus/dividend/rights
-PATCH  /api/portfolios/{id}/holdings/{holding}
+PATCH  /api/portfolios/{id}/holdings/{holding}  notes only — positions come from the ledger
 DELETE /api/portfolios/{id}/holdings/{holding}
 POST   /api/portfolios/{id}/rebuild            replay ledger → positions
 
