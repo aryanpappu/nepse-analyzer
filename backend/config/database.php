@@ -57,6 +57,12 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
+            // Pin the session time zone to the app's. Unset, MySQL/MariaDB use the
+            // server's own zone, and TIMESTAMP columns store the app's wall-clock
+            // strings as if they were in that zone: harmless on one server, but a
+            // dump restored on a server in another zone shifts every timestamp
+            // (moving from a CET box to a +05:45 one put rows 4h45m in the future).
+            'timezone' => env('DB_TIMEZONE') ?: (new DateTimeImmutable('now', new DateTimeZone(env('APP_TIMEZONE', 'UTC'))))->format('P'),
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 (defined('Pdo\\Mysql::ATTR_SSL_CA') ? constant('Pdo\\Mysql::ATTR_SSL_CA') : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
@@ -77,6 +83,12 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
+            // Pin the session time zone to the app's. Unset, MySQL/MariaDB use the
+            // server's own zone, and TIMESTAMP columns store the app's wall-clock
+            // strings as if they were in that zone: harmless on one server, but a
+            // dump restored on a server in another zone shifts every timestamp
+            // (moving from a CET box to a +05:45 one put rows 4h45m in the future).
+            'timezone' => env('DB_TIMEZONE') ?: (new DateTimeImmutable('now', new DateTimeZone(env('APP_TIMEZONE', 'UTC'))))->format('P'),
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 (defined('Pdo\\Mysql::ATTR_SSL_CA') ? constant('Pdo\\Mysql::ATTR_SSL_CA') : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
