@@ -198,12 +198,21 @@ final class NepseScraperService
         // when the source omits its own previous-close column.
         // The date comes along so the validator can tell a genuine previous
         // session from a close left behind by a scrape we missed.
-        $previousCloses = StockPrice::query()
+        // Only the latest earlier bar per stock is fetched: loading every
+        // historical close and de-duplicating in PHP hydrated the whole price
+        // table (300k+ rows) and exhausted a 512M worker on every run.
+        $latestEarlier = DB::table('stock_prices')
+            ->select('stock_id', DB::raw('MAX(trade_date) as trade_date'))
             ->whereIn('stock_id', $stocks->pluck('id'))
             ->where('trade_date', '<', $tradeDate->toDateString())
-            ->orderByDesc('trade_date')
-            ->get(['stock_id', 'close', 'trade_date'])
-            ->unique('stock_id')
+            ->groupBy('stock_id');
+
+        $previousCloses = DB::table('stock_prices as p')
+            ->joinSub($latestEarlier, 'l', static function ($join): void {
+                $join->on('p.stock_id', '=', 'l.stock_id')
+                    ->on('p.trade_date', '=', 'l.trade_date');
+            })
+            ->get(['p.stock_id', 'p.close', 'p.trade_date'])
             ->keyBy('stock_id');
 
         $created = 0;
