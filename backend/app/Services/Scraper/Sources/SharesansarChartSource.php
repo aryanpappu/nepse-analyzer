@@ -52,7 +52,7 @@ final class SharesansarChartSource implements HistorySource
     /**
      * @return list<HistoricalBar>
      */
-    public function fetchHistory(string $symbol, int $days): array
+    public function fetchHistory(string $symbol, int $days, ?Carbon $since = null): array
     {
         $symbol = strtoupper(trim($symbol));
 
@@ -80,6 +80,14 @@ final class SharesansarChartSource implements HistorySource
 
             // If the window came back short, the source has no older data.
             if (count($window) < $windowSize) {
+                break;
+            }
+
+            // Already as deep as the caller needs. `$days` is a bar count and
+            // the drip passes calendar days for it, so without this stop a
+            // 5-year target walked on to ~7 years of sessions: two or three
+            // extra requests per scrip for bars nobody asked for.
+            if ($since !== null && $window[0]->date->lte($since)) {
                 break;
             }
 

@@ -102,7 +102,9 @@ final class HistoryBackfillService
 
         $before = $this->earliestBarDates($stockIds);
 
-        $run = $this->scraper->backfillHistory($symbols, $days, count($symbols));
+        // $targetStart lets the chart source stop paging once it has reached the
+        // target, instead of walking on through years beyond it.
+        $run = $this->scraper->backfillHistory($symbols, $days, count($symbols), since: $targetStart);
 
         $after = $this->earliestBarDates($stockIds);
 
