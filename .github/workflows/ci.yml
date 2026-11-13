@@ -48,7 +48,7 @@ jobs:
   # ---------------------------------------------------------------------------
   backend:
     name: Backend (PHP ${{ matrix.php }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
 
     strategy:
@@ -162,7 +162,7 @@ jobs:
   # ---------------------------------------------------------------------------
   static-analysis:
     name: Static analysis (PHPStan)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
 
     defaults:
@@ -232,7 +232,7 @@ jobs:
   # ---------------------------------------------------------------------------
   frontend:
     name: Frontend
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
 
     defaults:
@@ -289,7 +289,7 @@ jobs:
     name: CI passed
     if: always()
     needs: [backend, static-analysis, frontend]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 2
     steps:
       - name: Require every gating job to succeed
@@ -313,7 +313,7 @@ jobs:
   # ---------------------------------------------------------------------------
   dependency-audit:
     name: Dependency audit (advisory)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     continue-on-error: true
 
