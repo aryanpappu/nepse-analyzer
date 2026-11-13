@@ -108,6 +108,16 @@ return [
         // Politeness delay between consecutive requests to the same host.
         'request_delay_ms' => (int) env('NEPSE_REQUEST_DELAY_MS', 1200),
         'verify_ssl' => (bool) env('NEPSE_VERIFY_SSL', true),
+        // Let the fundamentals crawl wait on different hosts at the same time
+        // (ShareSansar and Merolagani). Per-host politeness is unchanged: one
+        // request in flight per host, request_delay_ms between starts. Turn
+        // off to go back to strictly one request at a time overall.
+        'concurrent_hosts' => (bool) env('NEPSE_HTTP_CONCURRENT_HOSTS', true),
+        // In-memory reuse of a static page two sources read in the same pass
+        // (the ShareSansar company page). Opt-in per call, never used for
+        // live price pages. Bounded because the fetcher outlives a job.
+        'reuse_ttl_seconds' => (int) env('NEPSE_HTTP_REUSE_TTL_SECONDS', 300),
+        'reuse_max_entries' => (int) env('NEPSE_HTTP_REUSE_MAX_ENTRIES', 8),
     ],
 
     /*

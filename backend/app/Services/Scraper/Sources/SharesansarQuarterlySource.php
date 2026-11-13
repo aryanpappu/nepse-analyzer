@@ -188,7 +188,9 @@ final class SharesansarQuarterlySource implements FundamentalsSource
         $url = $this->baseUrl().self::COMPANY_PATH.strtolower($symbol);
 
         try {
-            $html = $this->http->get($this->key(), $url, cookies: $this->cookies);
+            // reuse: SharesansarSource reads this same page for the dividend
+            // split in the same pass, so whichever asks second gets it free.
+            $html = $this->http->get($this->key(), $url, cookies: $this->cookies, reuse: true);
         } catch (ScrapeException $e) {
             Log::channel('scraper')->debug('Company page fetch failed', [
                 'source' => $this->key(),

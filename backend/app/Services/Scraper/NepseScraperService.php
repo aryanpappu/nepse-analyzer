@@ -11,11 +11,13 @@ use App\Models\Sector;
 use App\Models\Stock;
 use App\Models\StockFundamental;
 use App\Models\StockPrice;
+use App\Services\Scraper\Contracts\FundamentalsSource;
 use App\Services\Scraper\Contracts\HistorySource;
 use App\Services\Scraper\Contracts\PriceSource;
 use App\Services\Scraper\Sources\SharesansarIndexHistorySource;
 use App\Services\Scraper\Sources\SharesansarSource;
 use App\Support\Numeric;
+use Closure;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -36,6 +38,7 @@ final class NepseScraperService
         private readonly HistorySource $history,
         private readonly IndexRowValidator $indexValidator,
         private readonly SharesansarIndexHistorySource $indexHistory,
+        private readonly HttpFetcher $http,
         private readonly FiscalPeriodDater $fiscalPeriods = new FiscalPeriodDater,
     ) {}
 
@@ -747,6 +750,7 @@ final class NepseScraperService
         int $days = 400,
         ?int $limit = null,
         ?callable $onProgress = null,
+        ?Carbon $since = null,
     ): ScrapeRun {
         $run = ScrapeRun::create([
             'type' => 'history_backfill',
@@ -776,7 +780,7 @@ final class NepseScraperService
 
         foreach ($stocks as $stock) {
             try {
-                $bars = $this->history->fetchHistory($stock->symbol, $days);
+                $bars = $this->history->fetchHistory($stock->symbol, $days, $since);
             } catch (Throwable $e) {
                 Log::channel('scraper')->warning('History backfill failed for symbol', [
                     'symbol' => $stock->symbol,
@@ -937,25 +941,35 @@ final class NepseScraperService
         foreach ($stocks as $stock) {
             $row = null;
 
+            // Every source is asked side by side. They live on different hosts
+            // (ShareSansar, Merolagani), so their waits can overlap; the
+            // fetcher still spaces and serialises each host on its own, so two
+            // sources on one host take turns exactly as before. Results come
+            // back in source order, which the merge below depends on.
+            $candidates = $this->http->concurrently(array_map(
+                static fn (FundamentalsSource $source): Closure => static fn (): ?FundamentalRow => $source->fetchFundamentals($stock->symbol, $stock->sector?->name),
+                $sources,
+            ));
+
             // Merge across sources instead of stopping at the first that
             // answers — no single site publishes the whole metric set, and
             // first-wins silently discarded whatever the others knew.
-            foreach ($sources as $source) {
-                try {
-                    $candidate = $source->fetchFundamentals($stock->symbol, $stock->sector?->name);
-                } catch (Throwable $e) {
+            foreach ($sources as $index => $source) {
+                $candidate = $candidates[$index] ?? null;
+
+                if ($candidate instanceof Throwable) {
                     // One source being down must not cost us the others' data
                     // for this scrip, nor abort the remaining symbols.
                     Log::channel('scraper')->warning('Fundamentals source failed', [
                         'source' => $source->key(),
                         'symbol' => $stock->symbol,
-                        'error' => $e->getMessage(),
+                        'error' => $candidate->getMessage(),
                     ]);
 
                     continue;
                 }
 
-                if ($candidate === null || $candidate->isEmpty()) {
+                if (! $candidate instanceof FundamentalRow || $candidate->isEmpty()) {
                     continue;
                 }
 

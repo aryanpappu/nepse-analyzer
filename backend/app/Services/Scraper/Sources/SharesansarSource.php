@@ -245,7 +245,9 @@ final class SharesansarSource extends AbstractHtmlSource
         $url = str_replace('{symbol}', strtolower($symbol), $template);
 
         try {
-            $page = $this->http->crawl($this->key(), $url);
+            // reuse: the quarterly source fetches this same page when it has to
+            // discover a scrip's sector, so the fundamentals pass asks once.
+            $page = $this->http->crawl($this->key(), $url, reuse: true);
         } catch (ScrapeException $e) {
             Log::channel('scraper')->warning('Company page fetch failed', [
                 'source' => $this->key(),

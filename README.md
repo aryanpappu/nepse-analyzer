@@ -116,6 +116,15 @@ Fundamentals **merge** instead, in the order set by `NEPSE_FUNDAMENTAL_SOURCES`
 publishes the whole metric set, so every field falls back independently and
 earlier sources win on conflict.
 
+For each scrip the sources are asked **side by side** (`HttpFetcher::concurrently()`),
+so ShareSansar and Merolagani answer at the same time instead of one after the
+other. Politeness is still per host and unchanged: one request in flight per
+host, `NEPSE_REQUEST_DELAY_MS` between starts — the two ShareSansar sources take
+turns exactly as before. The ShareSansar company page, which both the quarterly
+source (to discover a stale sector) and the ShareSansar source read, is fetched
+once per pass via a small opt-in memo (`reuse: true`, never used for live price
+pages). `NEPSE_HTTP_CONCURRENT_HOSTS=false` restores strictly serial requests.
+
 ### The quarterly report is where the real numbers are
 
 Everything a NEPSE investor actually compares scrips on — share capital,
