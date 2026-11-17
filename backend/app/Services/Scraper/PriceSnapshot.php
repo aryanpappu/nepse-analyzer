@@ -27,6 +27,9 @@ final readonly class PriceSnapshot
         public Carbon $tradeDate,
         public array $rows,
         public bool $dateIsAuthoritative = false,
+        // Only a live (mid-session) snapshot carries a time: the moment the
+        // source says its figures are current as of. Null for a settled table.
+        public ?Carbon $asOf = null,
     ) {}
 
     public function count(): int

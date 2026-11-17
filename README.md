@@ -406,20 +406,43 @@ nepse:navs          →  fund_navs             (daily NAV + premium/discount)
 nepse:classify      →  stocks.instrument_type
 ```
 
-Scheduled (`php artisan schedule:work`, NEPSE trades Sun–Thu, closes 15:00 NPT):
+Scheduled (`php artisan schedule:work`; NEPSE trades 11:00–15:00 NPT). Every
+pass runs **every day** — closed days are detected from the source, never from
+a weekday rule:
 
 | When (NPT) | What |
 |---|---|
-| **12:00 Sun–Thu** | Midday crawl — intraday prices while the market is open |
-| **15:00 Sun–Thu** | Closing crawl — the settled figures for the day |
-| 15:30 Sun–Thu | Safety net: queue analysis for anything still missing a signal |
-| 18:00 Sun–Thu | Portfolio analyses and buy recommendations |
-| Fri 02:00 | Fundamentals crawl (weekly; NEPSE is closed) |
+| **11:15 → 15:00, every 15 min** | Live pass — `/live-trading` → today's **provisional** bar (`source = sharesansar_live`), then indicators + playbook. **No AI.** |
+| **15:20, 16:00, 18:00** | Settled pass — `today-share-price` → overwrites the provisional bar with the official close, then indicators → AI analysis |
+| 18:00 | Portfolio analyses and buy recommendations (only once today's close is settled) |
+| 18:30 | Safety net: queue analysis for anything still missing a signal |
+| Fri 02:00 | Fundamentals crawl (weekly) |
 
-Both crawls upsert the same `(stock_id, trade_date)` row, so the 15:00 pass
-simply supersedes the midday snapshot — no duplicate history, and no special
-casing for the intraday run. Adjust with `NEPSE_SCRAPE_SCHEDULE` (pipe-separated
-cron expressions).
+Why two pages. `today-share-price` only ever shows the last **completed**
+session — a midday request just re-saves the previous day (the old 12:00 run
+did exactly that, every day). `/live-trading` updates during the session and
+stamps itself "As of : YYYY-MM-DD HH:MM", but carries no turnover, VWAP,
+transaction count or 52-week range.
+
+Rules the live pass keeps (`NepseScraperService::scrapeLivePrices()`, tested in
+`LivePriceScrapeTest`):
+
+- **The page decides whether today is a session.** Stamped with an earlier
+  date (before the open, a weekend, a holiday) → run recorded `skipped`,
+  nothing written.
+- **A settled close is never overwritten.** Once any of today's rows carries
+  a non-live source, the live pass skips. "Fetch now" chains live → settled
+  (never in parallel) so the settled table always writes last.
+- **AI never sees a partial session.** `QueueStockAnalysisJob` analyses a
+  scrip once per session, so analysing a live bar would skip the real close.
+  The live job calls indicators with `queueAnalysis: false`, and the
+  `$todayHasTradingData` guard in `routes/console.php` checks for a *settled* bar.
+- **Unknown stays unknown.** The dashboard reports turnover as "after close"
+  and ranks most-active by volume while the session is provisional, rather
+  than summing zeros.
+
+Tunables: `NEPSE_LIVE_SCHEDULE`, `NEPSE_SCRAPE_SCHEDULE` (pipe-separated cron
+expressions), `NEPSE_ANALYSIS_SCHEDULE`, `NEPSE_LIVE_MIN_ROWS`.
 
 ### Fetch now
 

@@ -175,10 +175,15 @@ export interface MarketMover {
 export interface MarketSummary {
   trade_date: string | null
   message?: string
+  /** True while the newest session is a mid-session live read, not the settled close. */
+  provisional?: boolean
+  /** When the last live pass finished (ISO 8601); null once settled. */
+  as_of?: string | null
   advances: number
   declines: number
   unchanged: number
-  total_turnover: number
+  /** Null mid-session: the live page publishes no turnover. */
+  total_turnover: number | null
   total_volume: number
   traded_scrips: number
   top_gainers: MarketMover[]

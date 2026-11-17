@@ -19,6 +19,9 @@ class ScrapeRun extends Model
 
     public const STATUS_FAILED = 'failed';
 
+    /** Ran and correctly found nothing to do (e.g. the market is closed). */
+    public const STATUS_SKIPPED = 'skipped';
+
     protected $fillable = [
         'type',
         'source',

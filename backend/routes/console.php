@@ -11,10 +11,11 @@ use App\Jobs\RecordWorkerHeartbeatJob;
 use App\Jobs\ScrapeCorporateActionsJob;
 use App\Jobs\ScrapeDailyPricesJob;
 use App\Jobs\ScrapeFundamentalsJob;
+use App\Jobs\ScrapeLivePricesJob;
 use App\Models\Portfolio;
 use App\Models\ScrapeRun;
-use App\Models\StockPrice;
 use App\Services\Operations\Heartbeat;
+use App\Services\Scraper\NepseScraperService;
 use Illuminate\Support\Facades\Schedule;
 
 /*
@@ -42,21 +43,30 @@ use Illuminate\Support\Facades\Schedule;
 |
 */
 
-// Whether today already has at least one observed bar - the same "a bar
-// proves a trading day" rule the backfill's calendar classifier uses, kept
-// here as a plain query since it needs to be real-time (today's own
-// classification is not settled in market_calendar_days until a later
-// backfill drip observes it).
-$todayHasTradingData = static fn (): bool => StockPrice::query()
-    ->whereDate('trade_date', now(config('nepse.timezone'))->toDateString())
-    ->exists();
+// Whether today's *settled* close is stored. A provisional live bar proves the
+// market opened, but the passes guarded by this (AI analysis, portfolio
+// reviews) must see the finished session: QueueStockAnalysisJob analyses a
+// scrip once per session, so running it on a partial day would skip the
+// real close.
+$todayHasTradingData = static fn (): bool => app(NepseScraperService::class)
+    ->hasSettledPrices(now(config('nepse.timezone')));
 
-// 1. Scrape the price table twice a day — midday (12:00) for an intraday
-//    read, and at the close (15:00) for the settled figures. Each run chains
-//    into indicator calculation, which queues the Claude analysis.
-//
-//    Both passes upsert the same (stock_id, trade_date) row, so the close simply
-//    supersedes the midday snapshot instead of creating duplicate history.
+// 1a. Live prices every 15 minutes while the market is open. Writes a
+//     provisional bar and rescores indicators + playbook; never queues AI.
+//     Closed days are detected from the page's own session stamp.
+foreach ((array) config('nepse.schedule.live') as $index => $cron) {
+    Schedule::job(new ScrapeLivePricesJob)
+        ->cron((string) $cron)
+        ->timezone((string) config('nepse.timezone'))
+        ->name('nepse-scrape-live-prices-'.$index)
+        ->withoutOverlapping(10)
+        ->onOneServer();
+}
+
+// 1b. The settled table after the close (15:20, then 16:00 and 18:00 for a
+//     slow publish). Each run overwrites today's provisional row with the
+//     official figures and chains into indicators, which queues the AI
+//     analysis once per scrip per session.
 foreach ((array) config('nepse.schedule.scrape') as $index => $cron) {
     Schedule::job(new ScrapeDailyPricesJob)
         ->cron((string) $cron)

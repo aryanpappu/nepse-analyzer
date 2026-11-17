@@ -41,6 +41,9 @@ export function Dashboard() {
   const query = useQuery({
     queryKey: ['market-summary'],
     queryFn: async () => (await api.get<{ data: MarketSummary }>('/market/summary')).data.data,
+    // Live passes land every 15 minutes during the session; poll so an open
+    // dashboard follows them instead of freezing at the first load.
+    refetchInterval: 5 * 60 * 1000,
   })
 
   const refresh = useRefreshPrices(setNotice)
@@ -86,8 +89,17 @@ export function Dashboard() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Market overview</h1>
           <p className="text-sm text-slate-500">
-            Trading session {shortDate(summary.trade_date)} · {summary.traded_scrips} scrips ·
-            prices update after market sessions
+            Trading session {shortDate(summary.trade_date)} · {summary.traded_scrips} scrips ·{' '}
+            {summary.provisional === true ? (
+              <>
+                <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-800">
+                  Live
+                </span>{' '}
+                updated {clockTime(summary.as_of)} · provisional until the settled close after 15:20
+              </>
+            ) : (
+              'live every 15 min while the market is open, settled after the close'
+            )}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -125,8 +137,8 @@ export function Dashboard() {
         <StatTile label="Unchanged" value={quantity(summary.unchanged)} />
         <StatTile
           label={<Explain term="turnover">Turnover</Explain>}
-          value={`NPR ${compactMoney(summary.total_turnover)}`}
-          hint={`${compactMoney(summary.total_volume)} shares`}
+          value={summary.total_turnover === null ? 'After close' : `NPR ${compactMoney(summary.total_turnover)}`}
+          hint={`${compactMoney(summary.total_volume)} shares${summary.total_turnover === null ? ' so far' : ''}`}
         />
       </div>
 
@@ -148,7 +160,11 @@ export function Dashboard() {
       <div className="grid gap-6 lg:grid-cols-3">
         <MoverTable title="Top gainers" rows={summary.top_gainers} />
         <MoverTable title="Top losers" rows={summary.top_losers} />
-        <MoverTable title="Most active by turnover" rows={summary.most_active} showTurnover />
+        {summary.provisional === true ? (
+          <MoverTable title="Most active by volume (live)" rows={summary.most_active} metric="volume" />
+        ) : (
+          <MoverTable title="Most active by turnover" rows={summary.most_active} metric="turnover" />
+        )}
       </div>
     </div>
   )
@@ -157,11 +173,12 @@ export function Dashboard() {
 function MoverTable({
   title,
   rows,
-  showTurnover,
+  metric,
 }: {
   title: string
   rows: MarketMover[]
-  showTurnover?: boolean
+  /** Show this figure instead of the change pill. */
+  metric?: 'turnover' | 'volume'
 }) {
   return (
     <Card title={title} className="overflow-hidden">
@@ -182,9 +199,9 @@ function MoverTable({
                 </td>
                 <td className="num py-2 text-right text-sm">{money(row.close)}</td>
                 <td className="py-2 pl-2 text-right">
-                  {showTurnover === true ? (
+                  {metric !== undefined ? (
                     <span className={`num text-sm ${changeColor(row.change_percent)}`}>
-                      {compactMoney(row.turnover)}
+                      {metric === 'volume' ? quantity(row.volume) : compactMoney(row.turnover)}
                       <span className="block text-xs text-slate-400">
                         {signedPercent(row.change_percent)}
                       </span>
@@ -200,4 +217,15 @@ function MoverTable({
       )}
     </Card>
   )
+}
+
+/** "13:15" in Nepal time, for the live-update stamp. */
+function clockTime(value: string | null | undefined): string {
+  if (value === null || value === undefined) return 'recently'
+
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) return 'recently'
+
+  return date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kathmandu' })
 }

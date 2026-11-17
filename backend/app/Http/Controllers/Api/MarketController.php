@@ -6,15 +6,18 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\ScrapeDailyPricesJob;
+use App\Jobs\ScrapeLivePricesJob;
 use App\Models\ScrapeRun;
 use App\Models\Sector;
 use App\Models\StockPrice;
 use App\Services\AI\LlmClient;
 use App\Services\AI\LlmManager;
 use App\Services\Operations\OperationalHealth;
+use App\Services\Scraper\NepseScraperService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -57,17 +60,34 @@ class MarketController extends Controller
                 ')
                 ->first();
 
+            // A mid-session bar from the live page, not yet replaced by the
+            // settled table: the UI must say so rather than present an LTP
+            // as the day's close.
+            $scraper = app(NepseScraperService::class);
+            $provisional = ! $scraper->hasSettledPrices(Carbon::parse((string) $latestDate));
+            $asOf = $provisional
+                ? ScrapeRun::where('type', NepseScraperService::LIVE_RUN_TYPE)
+                    ->where('trade_date', $latestDate)
+                    ->whereIn('status', [ScrapeRun::STATUS_SUCCESS, ScrapeRun::STATUS_PARTIAL])
+                    ->latest('id')
+                    ->value('finished_at')
+                : null;
+
             return [
                 'trade_date' => $latestDate,
+                'provisional' => $provisional,
+                'as_of' => $asOf === null ? null : Carbon::parse((string) $asOf)->toIso8601String(),
                 'advances' => (int) $breadth->advances,
                 'declines' => (int) $breadth->declines,
                 'unchanged' => (int) $breadth->unchanged,
-                'total_turnover' => (float) $breadth->total_turnover,
+                // The live page publishes no turnover; summing its zeros would
+                // report a session that moved nothing.
+                'total_turnover' => $provisional ? null : (float) $breadth->total_turnover,
                 'total_volume' => (int) $breadth->total_volume,
                 'traded_scrips' => (int) $breadth->traded_scrips,
                 'top_gainers' => $this->movers($latestDate, 'desc'),
                 'top_losers' => $this->movers($latestDate, 'asc'),
-                'most_active' => $this->mostActive($latestDate),
+                'most_active' => $this->mostActive($latestDate, byVolume: $provisional),
             ];
         });
 
@@ -106,12 +126,14 @@ class MarketController extends Controller
     /**
      * @return list<array<string, mixed>>
      */
-    private function mostActive(string $date): array
+    private function mostActive(string $date, bool $byVolume = false): array
     {
         return StockPrice::query()
             ->join('stocks', 'stocks.id', '=', 'stock_prices.stock_id')
             ->where('stock_prices.trade_date', $date)
-            ->orderByDesc('stock_prices.turnover')
+            // Mid-session rows carry no turnover (see summary()), so rank by
+            // the volume the live page does publish.
+            ->orderByDesc($byVolume ? 'stock_prices.volume' : 'stock_prices.turnover')
             ->limit(10)
             ->get([
                 'stocks.symbol', 'stocks.name',
@@ -137,8 +159,17 @@ class MarketController extends Controller
     {
         $ttl = (int) config('nepse.cache.sectors');
 
-        $payload = Cache::remember('market:sectors', $ttl, function (): array {
-            $latestDate = StockPrice::max('trade_date');
+        // Keyed on the newest date and whether it has settled, so a live
+        // session and its settled close never share a cached payload, and
+        // each new live day starts a fresh entry instead of waiting out the TTL.
+        $latestDate = StockPrice::max('trade_date');
+        $provisional = $latestDate !== null
+            && ! app(NepseScraperService::class)->hasSettledPrices(Carbon::parse((string) $latestDate));
+        $key = 'market:sectors:'.($latestDate ?? 'none').($provisional ? ':live' : '');
+        // Live passes land every 15 minutes; do not hold one for an hour.
+        $ttl = $provisional ? min($ttl, (int) config('nepse.cache.market_summary')) : $ttl;
+
+        $payload = Cache::remember($key, $ttl, function () use ($latestDate): array {
 
             $sectors = Sector::query()
                 ->withCount(['stocks' => fn ($q) => $q->where('is_active', true)])
@@ -183,7 +214,8 @@ class MarketController extends Controller
                     'slug' => $sector->slug,
                     'stocks_count' => $sector->stocks_count,
                     'average_change_percent' => $row?->avg_change === null ? null : round((float) $row->avg_change, 2),
-                    'total_turnover' => $row?->total_turnover === null ? null : (float) $row->total_turnover,
+                    // Mid-session rows carry no turnover; a sum of zeros is not one.
+                    'total_turnover' => $provisional || $row?->total_turnover === null ? null : (float) $row->total_turnover,
                     'advances' => $row === null ? null : (int) $row->advances,
                     'declines' => $row === null ? null : (int) $row->declines,
                 ];
@@ -194,7 +226,7 @@ class MarketController extends Controller
     }
 
     /**
-     * Fetch prices right now, instead of waiting for the 12:00 / 15:00 run.
+     * Fetch prices right now, instead of waiting for the next scheduled pass.
      *
      * Dispatched to the queue rather than run inline: a full crawl plus
      * indicator recalculation takes far longer than a browser will wait. The
@@ -230,10 +262,17 @@ class MarketController extends Controller
             }
         }
 
-        ScrapeDailyPricesJob::dispatch(null, null, true);
+        // Live first, settled second, in one chain — never in parallel. The
+        // live pass writes nothing once today's close is settled, but run
+        // concurrently its upsert could land after the settled one and put
+        // provisional figures back over the official close. Chained, the
+        // settled table always has the last word.
+        Bus::chain([
+            new ScrapeLivePricesJob,
+            new ScrapeDailyPricesJob(null, null, true),
+        ])->dispatch();
 
         Cache::forget('market:summary');
-        Cache::forget('market:sectors');
 
         return response()->json([
             'message' => 'Fetching the latest prices now. This takes about a minute — '
@@ -355,13 +394,44 @@ class MarketController extends Controller
          * outage becomes more likely than a holiday — long enough not to cry
          * wolf over a Friday, short enough to catch a stopped scheduler before
          * a week of prices is missing.
+         *
+         * But age alone cannot tell a stopped crawler from a closed market:
+         * both leave the newest bar days old. What tells them apart is whether
+         * the crawler is still succeeding. If a settled scrape finished within
+         * the last day and the source still served the session we already
+         * hold, the source has nothing newer — a weekend or holiday run,
+         * observed rather than assumed — and blaming the scheduler (as this
+         * once did over a weekend-plus-holiday gap) sends the reader to fix
+         * something that is working.
          */
         if ($age >= 3) {
+            $confirmedQuiet = $lastRun !== null
+                && in_array($lastRun->status, [ScrapeRun::STATUS_SUCCESS, ScrapeRun::STATUS_PARTIAL], true)
+                && $lastRun->finished_at !== null
+                && $lastRun->finished_at->greaterThan(now()->subHours(26))
+                && $lastRun->trade_date?->isSameDay($latest) === true;
+
+            if ($confirmedQuiet) {
+                return [
+                    'level' => 'ok',
+                    'headline' => sprintf('No new session since %s', $latest->format('j M')),
+                    'detail' => sprintf(
+                        'Checked at %s: the source still shows %s as its latest completed session, so the '
+                            .'market has been closed since (a weekend or holiday). Nothing needs fixing.',
+                        $lastRun->finished_at->copy()->setTimezone((string) config('nepse.timezone'))->format('j M H:i'),
+                        $latest->format('j M'),
+                    ),
+                    'action' => null,
+                    'days_behind' => $age,
+                ];
+            }
+
             return [
                 'level' => 'stale',
                 'headline' => sprintf('Prices are %d days old', $age),
-                'detail' => 'The most common cause is the scheduler not running. Horizon only works the '
-                    .'queue; a separate process dispatches the daily crawl.',
+                'detail' => 'No price crawl has succeeded in the last day. The most common cause is the '
+                    .'scheduler not running: Horizon only works the queue; a separate process dispatches '
+                    .'the daily crawl.',
                 'action' => 'php artisan schedule:work',
                 'days_behind' => $age,
             ];

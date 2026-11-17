@@ -80,7 +80,7 @@ of them.* Design notes so nothing is lost:
 - **380 legacy `AnalyzeStockJob` payloads** still queued on `nepse-default` from
   before the AI-queue split. Horizon runs that queue 3–6 wide, which is the rate
   limit breach the split exists to prevent. Either migrate them to `nepse-ai` or
-  drop them — the 15:30 safety net re-queues anything missing a signal.
+  drop them — the 18:30 safety net re-queues anything missing a signal.
 
 ### Engineering hygiene
 

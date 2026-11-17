@@ -32,6 +32,12 @@ use Throwable;
  */
 final class NepseScraperService
 {
+    /** `stock_prices.source` for a provisional mid-session bar. */
+    public const LIVE_SOURCE = 'sharesansar_live';
+
+    /** `scrape_runs.type` for a live pass. */
+    public const LIVE_RUN_TYPE = 'live_prices';
+
     public function __construct(
         private readonly PriceSourceManager $sources,
         private readonly PriceRowValidator $validator,
@@ -110,7 +116,7 @@ final class NepseScraperService
 
                 $tradeDate = $snapshot->tradeDate->copy()->startOfDay();
 
-                $result = $this->persistPrices($rows, $tradeDate, $source);
+                $result = $this->persistPrices($rows, $tradeDate, $source->key());
 
                 // Indices are supplementary to the price scrape, not a
                 // precondition of it: a source that cannot serve them (every
@@ -188,10 +194,131 @@ final class NepseScraperService
     }
 
     /**
+     * Write today's provisional bar from the live page while the market is open.
+     *
+     * The settled table ({@see scrapeDailyPrices()}) stays the record; this
+     * only fills the hours before it is published. Three rules keep it honest:
+     *
+     * - The page decides whether today is a session. It is stamped with the
+     *   session it shows, and before the open, on a holiday or at a weekend
+     *   that is an earlier day — the run is recorded as `skipped` and nothing
+     *   is written, so no weekday rule is involved.
+     * - A settled close is never overwritten. Once any of today's rows carries
+     *   a source other than {@see LIVE_SOURCE}, the run skips.
+     * - Rows are tagged {@see LIVE_SOURCE}, which is how the dashboard labels
+     *   them provisional and how the analysis guards tell a partial session
+     *   from a finished one.
+     */
+    public function scrapeLivePrices(): ScrapeRun
+    {
+        $today = Carbon::now(config('nepse.timezone'))->startOfDay();
+
+        $run = null;
+        $startedAt = microtime(true);
+        $finish = function (array $attributes) use (&$run, $startedAt): ScrapeRun {
+            $run->update($attributes + [
+                'finished_at' => Carbon::now(),
+                'duration_ms' => (int) ((microtime(true) - $startedAt) * 1000),
+            ]);
+
+            return $run->refresh();
+        };
+
+        try {
+            $run = ScrapeRun::create([
+                'type' => self::LIVE_RUN_TYPE,
+                'trade_date' => $today->toDateString(),
+                'status' => ScrapeRun::STATUS_RUNNING,
+                'started_at' => Carbon::now(),
+            ]);
+
+            if ($this->hasSettledPrices($today)) {
+                return $finish([
+                    'status' => ScrapeRun::STATUS_SKIPPED,
+                    'error' => 'Today\'s settled close is already stored; live prices would only overwrite it.',
+                ]);
+            }
+
+            $source = $this->sources->make('sharesansar');
+
+            if (! $source instanceof SharesansarSource) {
+                throw new ScrapeException('Live prices are only available from ShareSansar.');
+            }
+
+            $snapshot = $source->fetchLivePrices();
+
+            if (! $snapshot->tradeDate->isSameDay($today)) {
+                return $finish([
+                    'source' => self::LIVE_SOURCE,
+                    'status' => ScrapeRun::STATUS_SKIPPED,
+                    'error' => sprintf(
+                        'The live page shows the %s session, so the market is not open today yet (or at all).',
+                        $snapshot->tradeDate->toDateString(),
+                    ),
+                ]);
+            }
+
+            $minRows = (int) config('nepse.live.min_rows');
+
+            if ($snapshot->count() < $minRows) {
+                throw ScrapeException::tooFewRows(self::LIVE_SOURCE, $snapshot->count(), $minRows);
+            }
+
+            $result = $this->persistPrices($snapshot->rows, $today, self::LIVE_SOURCE);
+        } catch (Throwable $e) {
+            Log::channel('scraper')->warning('Live price scrape failed', ['error' => $e->getMessage()]);
+
+            if ($run !== null) {
+                $finish(['status' => ScrapeRun::STATUS_FAILED, 'error' => $e->getMessage()]);
+            }
+
+            throw $e instanceof ScrapeException ? $e : new ScrapeException($e->getMessage(), [], $e);
+        }
+
+        // Supplementary, exactly as in scrapeDailyPrices(): on a session day the
+        // live page is the one place today's indices exist at all.
+        try {
+            $this->scrapeIndices($today, 'sharesansar');
+        } catch (Throwable $e) {
+            Log::channel('scraper')->warning('Live index capture failed; prices are unaffected', [
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        Log::channel('scraper')->info('Live price scrape finished', [
+            'as_of' => $snapshot->asOf?->toDateTimeString(),
+            'created' => $result['created'],
+            'updated' => $result['updated'],
+            'rejected' => $result['rejected'],
+        ]);
+
+        return $finish([
+            'source' => self::LIVE_SOURCE,
+            'status' => $result['rejected'] > 0 ? ScrapeRun::STATUS_PARTIAL : ScrapeRun::STATUS_SUCCESS,
+            'rows_found' => $snapshot->count(),
+            'rows_created' => $result['created'],
+            'rows_updated' => $result['updated'],
+            'rows_rejected' => $result['rejected'],
+            'rejections' => $result['rejections'],
+        ]);
+    }
+
+    /**
+     * Has the settled (post-close) table been stored for this date?
+     */
+    public function hasSettledPrices(Carbon $date): bool
+    {
+        return StockPrice::query()
+            ->whereDate('trade_date', $date->toDateString())
+            ->where('source', '!=', self::LIVE_SOURCE)
+            ->exists();
+    }
+
+    /**
      * @param  list<PriceRow>  $rows
      * @return array{created: int, updated: int, rejected: int, rejections: list<array<string, mixed>>}
      */
-    private function persistPrices(array $rows, Carbon $tradeDate, PriceSource $source): array
+    private function persistPrices(array $rows, Carbon $tradeDate, string $sourceKey): array
     {
         // Resolve every symbol up front — one query instead of one per row.
         $symbols = array_map(static fn (PriceRow $row): string => $row->symbol, $rows);
@@ -294,7 +421,7 @@ final class NepseScraperService
                 'transactions' => $row->transactions,
                 'fifty_two_week_high' => $row->fiftyTwoWeekHigh,
                 'fifty_two_week_low' => $row->fiftyTwoWeekLow,
-                'source' => $source->key(),
+                'source' => $sourceKey,
                 'created_at' => $now,
                 'updated_at' => $now,
             ];
@@ -309,7 +436,7 @@ final class NepseScraperService
 
         if ($repaired > 0) {
             Log::channel('scraper')->info('Dropped inconsistent intraday bars, kept the closes', [
-                'source' => $source->key(),
+                'source' => $sourceKey,
                 'count' => $repaired,
             ]);
         }
@@ -329,7 +456,28 @@ final class NepseScraperService
             $existing->has($priceRow['stock_id']) ? $updated++ : $created++;
         }
 
-        DB::transaction(function () use ($priceRows, $stockUpdates): void {
+        $tradeDateString = $tradeDate->toDateString();
+
+        DB::transaction(function () use ($priceRows, $stockUpdates, $sourceKey, $tradeDateString): void {
+            // Re-checked inside the write, not only before the fetch: a settled
+            // pass can commit during the seconds a live fetch takes, and the
+            // upsert below replaces every column — source included — so a
+            // late live write would put provisional figures back over the
+            // official close and hide that it ever settled.
+            if ($sourceKey === self::LIVE_SOURCE) {
+                $settled = StockPrice::query()
+                    ->whereDate('trade_date', $tradeDateString)
+                    ->where('source', '!=', self::LIVE_SOURCE)
+                    ->pluck('stock_id')
+                    ->flip();
+
+                $priceRows = array_values(array_filter(
+                    $priceRows,
+                    static fn (array $row): bool => ! $settled->has($row['stock_id']),
+                ));
+                $stockUpdates = array_diff_key($stockUpdates, $settled->all());
+            }
+
             foreach (array_chunk($priceRows, 250) as $chunk) {
                 StockPrice::upsert(
                     $chunk,
@@ -343,8 +491,19 @@ final class NepseScraperService
                 );
             }
 
+            // Never move a stock's quote backwards. The settled page keeps
+            // serving yesterday until it is republished after the close, so a
+            // settled pass during or just after a session re-saves yesterday —
+            // harmless for stock_prices (that row already existed), but it
+            // would reset last_price to yesterday's close over today's live
+            // LTP, and every holding valued off stocks.last_price with it.
             foreach ($stockUpdates as $stockId => $attributes) {
-                Stock::whereKey($stockId)->update($attributes);
+                Stock::whereKey($stockId)
+                    ->where(static function ($query) use ($tradeDateString): void {
+                        $query->whereNull('last_traded_on')
+                            ->orWhereDate('last_traded_on', '<=', $tradeDateString);
+                    })
+                    ->update($attributes);
             }
         });
 

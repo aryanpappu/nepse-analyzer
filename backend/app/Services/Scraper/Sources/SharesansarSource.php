@@ -140,6 +140,120 @@ final class SharesansarSource extends AbstractHtmlSource
     }
 
     /**
+     * Mid-session prices from `/live-trading`.
+     *
+     * The today-share-price table above only ever shows the last *completed*
+     * session, so it cannot give an intraday read however often it is polled —
+     * every 12:00 run on record saved the previous day. This page updates
+     * while the market is open and stamps itself "As of : YYYY-MM-DD HH:MM:SS".
+     *
+     * It carries LTP, open, high, low, volume and previous close, and lists
+     * only scrips that have traded this session. It has no turnover, VWAP,
+     * transaction count or 52-week range; those stay at their "unknown"
+     * defaults and are filled in when the settled table overwrites the row
+     * after the close.
+     *
+     * @throws ScrapeException
+     */
+    public function fetchLivePrices(): PriceSnapshot
+    {
+        $url = (string) ($this->config()['live_trading_url']
+            ?? 'https://www.sharesansar.com/live-trading');
+
+        $snapshot = $this->parseLivePrices($this->http->get($this->key(), $url));
+
+        Log::channel('scraper')->info('Parsed live prices', [
+            'source' => $this->key(),
+            'rows' => $snapshot->count(),
+            'as_of' => $snapshot->asOf?->toDateTimeString(),
+        ]);
+
+        return $snapshot;
+    }
+
+    /**
+     * Pure half of {@see fetchLivePrices()}, so it can be asserted against
+     * captured markup without a network call.
+     *
+     * Throws rather than guessing when the "As of" stamp is missing: a live
+     * snapshot filed under the wrong day is exactly the corruption
+     * {@see PriceSnapshot} exists to prevent, and no calendar fallback is
+     * safe for a page whose whole point is that it changes during the day.
+     *
+     * @throws ScrapeException
+     */
+    public function parseLivePrices(string $html): PriceSnapshot
+    {
+        $page = new Crawler($html);
+
+        $asOf = null;
+        $stamp = $page->filter('#dDate');
+
+        if ($stamp->count() > 0
+            && preg_match('/(\d{4}-\d{2}-\d{2})(?:\s+(\d{2}:\d{2}(?::\d{2})?))?/', $stamp->first()->text(''), $m)) {
+            $asOf = Carbon::parse(trim($m[1].' '.($m[2] ?? '00:00:00')), config('nepse.timezone'));
+        }
+
+        if ($asOf === null) {
+            throw ScrapeException::markupChanged($this->key(), 'live-trading page has no readable "As of" stamp');
+        }
+
+        $table = $this->requireTable($page, 'table#headFixed', 'the live price table');
+        $map = $this->headerMap($table);
+
+        $columns = [
+            'symbol' => $this->columnIndex($map, ['symbol']),
+            'ltp' => $this->columnIndex($map, ['ltp']),
+            'open' => $this->columnIndex($map, ['open']),
+            'high' => $this->columnIndex($map, ['high']),
+            'low' => $this->columnIndex($map, ['low']),
+            'volume' => $this->columnIndex($map, ['volume', 'vol']),
+            'prev_close' => $this->columnIndex($map, ['prev close', 'previous close']),
+            // The percent column, never "Point Change" (rupees).
+            'change_percent' => $this->columnIndex($map, ['percent change', 'change percent']),
+        ];
+
+        if ($columns['symbol'] === null || $columns['ltp'] === null) {
+            throw ScrapeException::markupChanged(
+                $this->key(),
+                'live price table is missing the symbol or LTP column; headers seen: '.implode(', ', array_keys($map)),
+            );
+        }
+
+        $rows = [];
+
+        foreach ($this->rows($table) as $cells) {
+            $symbol = $this->normalizeSymbol($this->cell($cells, $columns['symbol']));
+            $ltp = $this->numberAt($cells, $columns['ltp']);
+
+            if ($symbol === null || $ltp === null || $ltp <= 0) {
+                continue;
+            }
+
+            $rows[] = new PriceRow(
+                symbol: $symbol,
+                name: null,
+                sector: null,
+                // Provisional: the last trade so far, not the official close.
+                close: $ltp,
+                open: $this->numberAt($cells, $columns['open']),
+                high: $this->numberAt($cells, $columns['high']),
+                low: $this->numberAt($cells, $columns['low']),
+                previousClose: $this->numberAt($cells, $columns['prev_close']),
+                changePercent: $this->numberAt($cells, $columns['change_percent']),
+                volume: (int) ($this->numberAt($cells, $columns['volume']) ?? 0),
+            );
+        }
+
+        return new PriceSnapshot(
+            tradeDate: $asOf->copy()->startOfDay(),
+            rows: $rows,
+            dateIsAuthoritative: true,
+            asOf: $asOf,
+        );
+    }
+
+    /**
      * The session the page is actually showing.
      *
      * Read from the date input the page uses to drive its own filter, with the

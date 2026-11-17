@@ -131,6 +131,13 @@ return [
     |
     */
 
+    'live' => [
+        // Early in a session only a fraction of scrips have traded, so this
+        // is lower than validation.min_rows; it still catches a page that
+        // parsed into a handful of rows because its markup changed.
+        'min_rows' => (int) env('NEPSE_LIVE_MIN_ROWS', 20),
+    ],
+
     'validation' => [
         'min_rows' => (int) env('NEPSE_MIN_ROWS', 50),
         // NEPSE enforces a +/-10% daily circuit breaker; allow some headroom
@@ -376,9 +383,9 @@ return [
         'basket_coverage_fraction' => (float) env('NEPSE_BACKFILL_BASKET_COVERAGE_FRACTION', 0.8),
 
         // Cron expression(s) for when the drip job is allowed to run. Default
-        // sits in hours the live pipeline is idle - clear of the 12:00/15:00
-        // scrapes, the 15:30 analysis safety net, and the 18:00 portfolio
-        // pass (all in nepse.timezone).
+        // sits in hours the live pipeline is idle - clear of the 11:15-15:00
+        // live passes, the 15:20-18:00 settled passes, the 18:00 portfolio
+        // pass and the 18:30 analysis safety net (all in nepse.timezone).
         'schedule' => env('NEPSE_BACKFILL_SCHEDULE', '*/15 0-10,20-23 * * *'),
     ],
 
@@ -440,26 +447,41 @@ return [
 
     'schedule' => [
         /*
-         * Two crawls every day.
+         * The settled table, after the close.
          *
-         * 12:00 catches mid-session prices while the market is open (on a day
-         * it is), so the dashboard is useful during trading hours rather than
-         * only after the close. 15:00 is the close itself, and that run is
-         * the one whose prices become the day's official record.
+         * ShareSansar's today-share-price page only ever shows the last
+         * *completed* session, so a run during trading hours just re-saves
+         * the previous day (every 12:00 run on record did exactly that). The
+         * market closes at 15:00 and the page is republished some minutes
+         * later, so the first pass waits until 15:20 and two later passes
+         * catch a slow publish. Each overwrites today's provisional live row
+         * with the official figures, and each chains into indicators and the
+         * AI analysis — which only ever sees settled data, because
+         * QueueStockAnalysisJob analyses a scrip once per session.
          *
-         * Both write to the same (stock_id, trade_date) row, so the later run
-         * simply overwrites the earlier one with settled figures — no duplicate
-         * history, and no need to special-case the intraday pass.
+         * A pass on a closed day re-saves the last session harmlessly.
          */
         'scrape' => array_values(array_filter(array_map(
             'trim',
-            explode('|', (string) env('NEPSE_SCRAPE_SCHEDULE', '0 12 * * *|0 15 * * *'))
+            explode('|', (string) env('NEPSE_SCRAPE_SCHEDULE', '20 15 * * *|0 16 * * *|0 18 * * *'))
         ))),
 
-        // Analysis runs once, after the close has settled. The job itself (or
-        // its schedule guard - see routes/console.php) is responsible for
-        // finding nothing to do on a day that turned out not to be a session.
-        'analysis' => env('NEPSE_ANALYSIS_SCHEDULE', '30 15 * * *'),
+        /*
+         * Live prices while the market is open (11:00-15:00), from the
+         * /live-trading page. Each pass writes a provisional row for today
+         * and rescores indicators and the playbook (cheap, no LLM). AI
+         * analysis is never queued from here. A pass on a closed day sees the
+         * page stamped with an earlier session and writes nothing — the page,
+         * not a weekday rule, decides.
+         */
+        'live' => array_values(array_filter(array_map(
+            'trim',
+            explode('|', (string) env('NEPSE_LIVE_SCHEDULE', '15,30,45 11 * * *|*/15 12-14 * * *|0 15 * * *'))
+        ))),
+
+        // Safety net after the settled passes. The job (and its schedule
+        // guard in routes/console.php) finds nothing to do on a closed day.
+        'analysis' => env('NEPSE_ANALYSIS_SCHEDULE', '30 18 * * *'),
     ],
 
     /*
