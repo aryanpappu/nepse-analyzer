@@ -215,7 +215,7 @@ final class NepseScraperService
 
         $run = null;
         $startedAt = microtime(true);
-        $finish = function (array $attributes) use (&$run, $startedAt): ScrapeRun {
+        $finish = static function (ScrapeRun $run, array $attributes) use ($startedAt): ScrapeRun {
             $run->update($attributes + [
                 'finished_at' => Carbon::now(),
                 'duration_ms' => (int) ((microtime(true) - $startedAt) * 1000),
@@ -233,7 +233,7 @@ final class NepseScraperService
             ]);
 
             if ($this->hasSettledPrices($today)) {
-                return $finish([
+                return $finish($run, [
                     'status' => ScrapeRun::STATUS_SKIPPED,
                     'error' => 'Today\'s settled close is already stored; live prices would only overwrite it.',
                 ]);
@@ -248,7 +248,7 @@ final class NepseScraperService
             $snapshot = $source->fetchLivePrices();
 
             if (! $snapshot->tradeDate->isSameDay($today)) {
-                return $finish([
+                return $finish($run, [
                     'source' => self::LIVE_SOURCE,
                     'status' => ScrapeRun::STATUS_SKIPPED,
                     'error' => sprintf(
@@ -269,7 +269,7 @@ final class NepseScraperService
             Log::channel('scraper')->warning('Live price scrape failed', ['error' => $e->getMessage()]);
 
             if ($run !== null) {
-                $finish(['status' => ScrapeRun::STATUS_FAILED, 'error' => $e->getMessage()]);
+                $finish($run, ['status' => ScrapeRun::STATUS_FAILED, 'error' => $e->getMessage()]);
             }
 
             throw $e instanceof ScrapeException ? $e : new ScrapeException($e->getMessage(), [], $e);
@@ -292,7 +292,7 @@ final class NepseScraperService
             'rejected' => $result['rejected'],
         ]);
 
-        return $finish([
+        return $finish($run, [
             'source' => self::LIVE_SOURCE,
             'status' => $result['rejected'] > 0 ? ScrapeRun::STATUS_PARTIAL : ScrapeRun::STATUS_SUCCESS,
             'rows_found' => $snapshot->count(),

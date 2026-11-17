@@ -142,4 +142,18 @@ final class LivePriceScrapeTest extends FeatureTestCase
         $this->assertSame(331.0, (float) $adbl->last_price);
         $this->assertSame('2026-11-17', Carbon::parse((string) $adbl->last_traded_on)->toDateString());
     }
+
+    public function test_mid_session_market_pages_report_turnover_as_unknown_not_zero(): void
+    {
+        $this->at('2026-11-17 13:05');
+        app(NepseScraperService::class)->scrapeLivePrices();
+        Sanctum::actingAs(User::factory()->create());
+
+        $this->getJson('/api/market/summary')
+            ->assertOk()
+            ->assertJsonPath('data.provisional', true)
+            ->assertJsonPath('data.total_turnover', null);
+
+        $this->getJson('/api/sectors')->assertOk();
+    }
 }

@@ -169,8 +169,7 @@ class MarketController extends Controller
         // Live passes land every 15 minutes; do not hold one for an hour.
         $ttl = $provisional ? min($ttl, (int) config('nepse.cache.market_summary')) : $ttl;
 
-        $payload = Cache::remember($key, $ttl, function () use ($latestDate): array {
-
+        $payload = Cache::remember($key, $ttl, function () use ($latestDate, $provisional): array {
             $sectors = Sector::query()
                 ->withCount(['stocks' => fn ($q) => $q->where('is_active', true)])
                 ->orderBy('name')
@@ -205,7 +204,7 @@ class MarketController extends Controller
                 ->get()
                 ->keyBy('sector_id');
 
-            return $sectors->map(static function (Sector $sector) use ($stats): array {
+            return $sectors->map(static function (Sector $sector) use ($stats, $provisional): array {
                 $row = $stats->get($sector->id);
 
                 return [
@@ -405,11 +404,14 @@ class MarketController extends Controller
          * something that is working.
          */
         if ($age >= 3) {
+            $finishedAt = $lastRun?->finished_at === null ? null : Carbon::parse((string) $lastRun->finished_at);
+            $servedDate = $lastRun?->trade_date === null ? null : Carbon::parse((string) $lastRun->trade_date);
+
             $confirmedQuiet = $lastRun !== null
                 && in_array($lastRun->status, [ScrapeRun::STATUS_SUCCESS, ScrapeRun::STATUS_PARTIAL], true)
-                && $lastRun->finished_at !== null
-                && $lastRun->finished_at->greaterThan(now()->subHours(26))
-                && $lastRun->trade_date?->isSameDay($latest) === true;
+                && $finishedAt !== null
+                && $finishedAt->greaterThan(now()->subHours(26))
+                && $servedDate?->isSameDay($latest) === true;
 
             if ($confirmedQuiet) {
                 return [
@@ -418,7 +420,7 @@ class MarketController extends Controller
                     'detail' => sprintf(
                         'Checked at %s: the source still shows %s as its latest completed session, so the '
                             .'market has been closed since (a weekend or holiday). Nothing needs fixing.',
-                        $lastRun->finished_at->copy()->setTimezone((string) config('nepse.timezone'))->format('j M H:i'),
+                        $finishedAt->copy()->setTimezone((string) config('nepse.timezone'))->format('j M H:i'),
                         $latest->format('j M'),
                     ),
                     'action' => null,

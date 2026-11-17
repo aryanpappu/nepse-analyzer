@@ -8,6 +8,7 @@ use App\Models\ScrapeRun;
 use App\Services\Scraper\NepseScraperService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -56,7 +57,11 @@ class ScrapeLivePricesJob implements ShouldQueue
         ]);
 
         if (in_array($run->status, [ScrapeRun::STATUS_SUCCESS, ScrapeRun::STATUS_PARTIAL], true)) {
-            CalculateIndicatorsJob::dispatch($run->trade_date?->toDateString(), null, queueAnalysis: false);
+            CalculateIndicatorsJob::dispatch(
+                $run->trade_date === null ? null : Carbon::parse((string) $run->trade_date)->toDateString(),
+                null,
+                queueAnalysis: false,
+            );
         }
     }
 }
